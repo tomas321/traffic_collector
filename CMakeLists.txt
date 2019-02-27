@@ -3,4 +3,6 @@ project(traffic_collector)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(traffic_collector main.cpp)
+include_directories(src)
+
+add_executable(traffic_collector src/logging.cpp src/logging.h src/input/controller.cpp src/input/controller.h)
