@@ -14,7 +14,7 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 
-#define BASE_PATH "/etc/traffic_collector"
+#define BASE_PATH "/tmp/" //etc/traffic_collector/"
 
 namespace logging = boost::log;
 namespace src = boost::log::sources;
@@ -23,20 +23,25 @@ namespace keywords = boost::log::keywords;
 
 using namespace std;
 
-class Logging: public {
+class Logging {
 private:
     static Logging *logger;
+    string base_path;
     Logging();
 
 public:
-    static Logging *get_instance();
-    string base_path;
-    void trace(string msg);
-    void debug(string msg);
-    void info(string msg);
-    void warning(string msg);
-    void error(string msg);
-    void fatal(string msg);
+    static void init(logging::trivial::severity_level level) {
+        if (logger == nullptr) {
+            logger = new Logging();
+            boost::log::core::get()->set_filter(
+                    boost::log::trivial::severity >= level
+            );
+        }
+    }
+    static void log(logging::trivial::severity_level level, const string &msg) {
+        src::severity_logger< logging::trivial::severity_level > severity_logger;
+        BOOST_LOG_SEV(severity_logger, level) << msg;
+    }
 };
 
 

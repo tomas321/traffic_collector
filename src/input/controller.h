@@ -10,13 +10,7 @@
 using namespace std;
 
 class Controller {
-private:
-    string name;
-    int year;
 
-public:
-    string get_name();
-    int get_year();
 };
 
 
