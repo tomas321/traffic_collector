@@ -1,0 +1,14 @@
+//
+// Created by tomas on 01/03/19.
+//
+
+#ifndef TRAFFIC_COLLECTOR_DATABESE_CONTROLLER_H
+#define TRAFFIC_COLLECTOR_DATABESE_CONTROLLER_H
+
+
+class databese_controller {
+
+};
+
+
+#endif //TRAFFIC_COLLECTOR_DATABESE_CONTROLLER_H

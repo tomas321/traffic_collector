@@ -5,7 +5,6 @@
 #ifndef TRAFFIC_COLLECTOR_CONTROLLER_H
 #define TRAFFIC_COLLECTOR_CONTROLLER_H
 
-#include <string>
 
 using namespace std;
 
