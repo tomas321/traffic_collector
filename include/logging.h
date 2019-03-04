@@ -22,6 +22,7 @@ namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
 
 using namespace std;
+using namespace boost::log::trivial;
 
 class Logging {
 private:

@@ -5,18 +5,9 @@
 #include <iostream>
 #include "configuration.h"
 #include "logging.h"
+#include "exceptions.h"
 
 Configuration *Configuration::configuration = nullptr;
-
-Configuration::Configuration() {
-    YAML::Node config_data = YAML::LoadFile(config_file_path);
-
-    this->config_filter(config_data, this->filter_config);
-    this->config_database(config_data, this->db_config);
-    this->config_sensor(config_data, this->sensor_config);
-
-    Logging::log(logging::trivial::info, "loaded config from " + config_file_path);
-}
 
 Configuration* Configuration::initialize() {
     if (configuration == nullptr) {
@@ -25,43 +16,60 @@ Configuration* Configuration::initialize() {
     return configuration;
 }
 
-filter_settings Configuration::get_filter_config() {
-    Logging::log(logging::trivial::info, "retrieved filter configuration");
-    return this->filter_config;
+Configuration::Configuration() {
+    try {
+        load_configuration(config_file_path);
+        Logging::log(info, "loaded config from " + config_file_path);
+    } catch (const YAML::ParserException &ex) {
+        throw ConfigurationError(ex.what()); // msq or what()
+    }
 }
 
-database_settings Configuration::get_db_config() {
-    Logging::log(logging::trivial::info, "retrieved database configuration");
-    return this->db_config;
+void Configuration::load_configuration(const string &config_path) {
+    YAML::Node config_data = YAML::LoadFile(config_file_path);
+
+    config_filter(config_data);
+    config_database(config_data);
+    config_sensor(config_data);
 }
 
-sensor_settings Configuration::get_sensor_config() {
-    Logging::log(logging::trivial::info, "retrieved interface configuration");
-    return this->sensor_config;
-}
-
-void Configuration::config_filter(const YAML::Node &config, filter_settings &settings) {
+void Configuration::config_filter(const YAML::Node &config) {
     // TODO: should be optional so default values are to be used
-    settings.src_ip = config["filter"]["src"].as<string>();
-    settings.dst_ip = config["filter"]["dst"].as<string>();
+    main_config.filter_config.src_ip = config["filter"]["src"].as<string>();
+    main_config.filter_config.dst_ip = config["filter"]["dst"].as<string>();
 }
 
-void Configuration::config_database(const YAML::Node &config, database_settings &settings) {
+void Configuration::config_database(const YAML::Node &config) {
     // TODO: should all have default values for no configuration specified
-    settings.beats_host = config["database"]["beats"]["host"].as<string>();
-    settings.beats_port = config["database"]["beats"]["port"].as<uint16_t>();
+    main_config.database_config.beats_host = config["database"]["beats"]["host"].as<string>();
+    main_config.database_config.beats_port = config["database"]["beats"]["port"].as<uint16_t>();
 
-    settings.elastic_host = config["database"]["elastic"]["host"].as<string>();
-    settings.elastic_port = config["database"]["elastic"]["port"].as<uint16_t>();
+    main_config.database_config.elastic_host = config["database"]["elastic"]["host"].as<string>();
+    main_config.database_config.elastic_port = config["database"]["elastic"]["port"].as<uint16_t>();
 
-    settings.archive_path = config["database"]["archive"]["path"].as<string>();
-    settings.archive_limit = config["database"]["archive"]["limit"].as<uint32_t >();
+    main_config.database_config.archive_path = config["database"]["archive"]["path"].as<string>();
+    main_config.database_config.archive_limit = config["database"]["archive"]["limit"].as<uint32_t>();
 }
 
-void Configuration::config_sensor(const YAML::Node &config, sensor_settings &settings) {
+void Configuration::config_sensor(const YAML::Node &config) {
     // TODO: should all have default values for no configuration specified
-    settings.interface = config["sensor"]["interface"].as<string>();
-    settings.direction = str_to_enum(config["sensor"]["direction"].as<string>());
+    main_config.sensor_config.interface = Configuration::load_or_default<string>(2, std::vector<string>{"sensor", "interface"}, config, "eno1"); // config["sensor"]["interface"].as<string>();
+    auto tmp = Configuration::load_or_default<string>(2, std::vector<string>{"sensor", "direction"}, config, "promisc");
+    main_config.sensor_config.direction = str_to_enum(tmp);
+}
+
+template <typename T>
+T Configuration::load_or_default(int key_count, std::vector<std::string> keys, const YAML::Node &config, T default_value) {
+    try {
+        switch (key_count) {
+            case 2:
+                return config[keys[0]][keys[1]].as<T>();
+            case 3:
+                return config[keys[0]][keys[1]][keys[2]].as<T>();
+        }
+    } catch (YAML::InvalidNode &er) {
+        return default_value;
+    }
 }
 
 sniff_direction Configuration::str_to_enum(string source) {
@@ -71,7 +79,12 @@ sniff_direction Configuration::str_to_enum(string source) {
     mapper["out"] = sniff_direction::out;
 
     // TODO: include mapper check
-    return mapper[source];
+    try {
+        return mapper.at(source);
+    } catch (const std::out_of_range &ex) {
+        Logging::log(error, "Invalid sniffing direction " + source);
+        throw ConfigurationError();
+    }
 }
 
 string Configuration::enum_to_str(sniff_direction dir) {
@@ -80,6 +93,10 @@ string Configuration::enum_to_str(sniff_direction dir) {
     mapper[sniff_direction::in] = "in";
     mapper[sniff_direction::out] = "out";
 
-    // TODO: include mapper check
+    // no mapper check of loaded configuration, because values already prechecked
     return mapper[dir];
+}
+
+packed_settings Configuration::get_configuration() {
+    return main_config;
 }
