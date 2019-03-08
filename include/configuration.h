@@ -12,30 +12,38 @@
 #include <yaml-cpp/yaml.h>
 
 #define CONFIG_FULL_PATH (boost::filesystem::current_path() / boost::filesystem::path("doc/sensor.yml")).generic_string()
+#define DEFAULT_BEATS_HOST "127.0.0.1"
+#define DEFAULT_BEATS_PORT 12000
+#define DEFAULT_ELASTIC_HOST "127.0.0.1"
+#define DEFAULT_ELASTIC_PORT 9200
+#define DEFAULT_ARCHIVE_PATH "/etc/sensor"
+#define DEFAULT_ARCHIVE_LIMIT 50000 // in MB
 
 using namespace std;
 using namespace boost;
+
 
 enum sniff_direction {
     in,
     out,
     promisc
 };
+
 struct filter_settings {
     string src_ip;
     string dst_ip;
 };
 struct database_settings {
-    string beats_host;
-    uint16_t beats_port;
-    string elastic_host;
-    uint16_t elastic_port;
-    string archive_path;
-    uint32_t archive_limit;
+    string beats_host = DEFAULT_BEATS_HOST;
+    uint16_t beats_port = DEFAULT_BEATS_PORT;
+    string elastic_host = DEFAULT_ELASTIC_HOST;
+    uint16_t elastic_port = DEFAULT_ELASTIC_PORT;
+    string archive_path = DEFAULT_ARCHIVE_PATH;
+    uint32_t archive_limit = DEFAULT_ARCHIVE_LIMIT;
 };
 struct sensor_settings {
     string interface;
-    sniff_direction direction;
+    sniff_direction direction = promisc;
 };
 struct packed_settings{
     filter_settings filter_config;
@@ -52,8 +60,6 @@ private:
     Configuration();
     ~Configuration();
 
-    template <typename T>
-    static T load_or_default(int key_count, std::vector<string> keys, const YAML::Node &config, T default_value);
     static sniff_direction str_to_enum(string);  // should be used only on configuration insertion
 
     void load_configuration(const string&);

@@ -5,9 +5,8 @@
 # default direction => promisc
 # archive output path and archivation condition
 sensor:
-  interface: eth1
-  direction: promisc
-
+#  interface: eth1
+  direction: in
 
 # filters as allowed traffic
 # default => not specified
@@ -27,7 +26,7 @@ database:
     port: 12000
   elastic:
     host: 192.148.56.4
-    port: 12000
+    port: 9200
   archive:
     path: "/home/user/sensor_archive/"
     limit: 50000

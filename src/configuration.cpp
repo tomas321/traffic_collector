@@ -9,7 +9,7 @@
 
 Configuration *Configuration::configuration = nullptr;
 
-Configuration* Configuration::initialize() {
+Configuration *Configuration::initialize() {
     if (configuration == nullptr) {
         configuration = new Configuration();
     }
@@ -34,51 +34,57 @@ void Configuration::load_configuration(const string &config_path) {
 }
 
 void Configuration::config_filter(const YAML::Node &config) {
-    // TODO: should be optional so default values are to be used
-    main_config.filter_config.src_ip = config["filter"]["src"].as<string>();
-    main_config.filter_config.dst_ip = config["filter"]["dst"].as<string>();
+    // default is empty string
+    if (config["filter"]) {
+        main_config.filter_config.src_ip = config["filter"]["src"].as<string>("");
+        main_config.filter_config.dst_ip = config["filter"]["dst"].as<string>("");
+    }
 }
 
 void Configuration::config_database(const YAML::Node &config) {
-    // TODO: should all have default values for no configuration specified
-    main_config.database_config.beats_host = config["database"]["beats"]["host"].as<string>();
-    main_config.database_config.beats_port = config["database"]["beats"]["port"].as<uint16_t>();
+    if (config["database"]) {
+        if (config["database"]["beats"]) {
+            main_config.database_config.beats_host = config["database"]["beats"]["host"].as<string>(DEFAULT_BEATS_HOST);
+            main_config.database_config.beats_port = config["database"]["beats"]["port"].as<uint16_t>(DEFAULT_BEATS_PORT);
+        }
+        if (config["database"]["elastic"]) {
+            main_config.database_config.elastic_host = config["database"]["elastic"]["host"].as<string>(DEFAULT_ELASTIC_HOST);
+            main_config.database_config.elastic_port = config["database"]["elastic"]["port"].as<uint16_t>(DEFAULT_ELASTIC_PORT);
+        }
+        if (config["database"]["archive"]) {
+            main_config.database_config.archive_path = config["database"]["archive"]["path"].as<string>(DEFAULT_ARCHIVE_PATH);
+            main_config.database_config.archive_limit = config["database"]["archive"]["limit"].as<uint32_t>(DEFAULT_ARCHIVE_LIMIT);
+        }
+    }
+}
 
-    main_config.database_config.elastic_host = config["database"]["elastic"]["host"].as<string>();
-    main_config.database_config.elastic_port = config["database"]["elastic"]["port"].as<uint16_t>();
-
-    main_config.database_config.archive_path = config["database"]["archive"]["path"].as<string>();
-    main_config.database_config.archive_limit = config["database"]["archive"]["limit"].as<uint32_t>();
+void Configuration::error_fallback(const vector<string> &keys) {
+    string concat_keys;
+    for (const auto &key : keys) concat_keys += key;
+    Logging::log(debug, concat_keys + ": is left with its default value");
 }
 
 void Configuration::config_sensor(const YAML::Node &config) {
-    // TODO: should all have default values for no configuration specified
-    main_config.sensor_config.interface = Configuration::load_or_default<string>(2, std::vector<string>{"sensor", "interface"}, config, "eno1"); // config["sensor"]["interface"].as<string>();
-    auto tmp = Configuration::load_or_default<string>(2, std::vector<string>{"sensor", "direction"}, config, "promisc");
+    string tmp = config["sensor"]["direction"].as<string>("promisc");
     main_config.sensor_config.direction = str_to_enum(tmp);
-}
 
-template <typename T>
-T Configuration::load_or_default(int key_count, std::vector<std::string> keys, const YAML::Node &config, T default_value) {
+    // sensor interface is a mandatory setting.
+    // TODO: should be checked by the validator
     try {
-        switch (key_count) {
-            case 2:
-                return config[keys[0]][keys[1]].as<T>();
-            case 3:
-                return config[keys[0]][keys[1]][keys[2]].as<T>();
-        }
-    } catch (YAML::InvalidNode &er) {
-        return default_value;
+        main_config.sensor_config.interface = config["sensor"]["interface"].as<string>();
+    } catch (const YAML::InvalidNode &er) {
+        throw ConfigurationError("sensor.interface is a mandatory setting. missing value.");
     }
 }
 
 sniff_direction Configuration::str_to_enum(string source) {
+    /* TODO: make mapper a public thing */
     map<string, sniff_direction> mapper;
     mapper["promisc"] = sniff_direction::promisc;
     mapper["in"] = sniff_direction::in;
     mapper["out"] = sniff_direction::out;
 
-    // TODO: include mapper check
+    // TODO: it should be checked by the configuration checker and not in parsing
     try {
         return mapper.at(source);
     } catch (const std::out_of_range &ex) {

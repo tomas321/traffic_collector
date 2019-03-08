@@ -40,6 +40,7 @@ public:
         }
     }
     static void log(logging::trivial::severity_level level, const string &msg) {
+        cout << "=== logging: " << msg << endl;
         src::severity_logger< logging::trivial::severity_level > severity_logger;
         BOOST_LOG_SEV(severity_logger, level) << msg;
     }
