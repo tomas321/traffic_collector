@@ -15,9 +15,16 @@ add_executable(main bin/main.cpp
         src/output/databese_controller.cpp
         include/databese_controller.h include/exceptions.h)
 
-find_package(Boost 1.65 COMPONENTS log thread system REQUIRED)
+find_package(Boost 1.65 COMPONENTS log log_setup thread system filesystem REQUIRED)
 find_package(Threads REQUIRED)
 find_package(yaml-cpp 0.5 REQUIRED)
 
-target_link_libraries(main ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} yaml-cpp)
+target_link_libraries(main ${Boost_LOG_LIBRARY}
+        ${Boost_LOG_SETUP_LIBRARY}
+        ${Boost_THREAD_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${CMAKE_THREAD_LIBS_INIT}
+        yaml-cpp)
+# target_link_libraries(${Boost_LIBRARIES})
 include_directories(${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
