@@ -5,7 +5,7 @@
 # default direction => promisc
 # archive output path and archivation condition
 sensor:
-#  interface: eth1
+  interface: eth1
   direction: in
 
 # filters as allowed traffic

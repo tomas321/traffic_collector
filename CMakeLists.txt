@@ -28,3 +28,10 @@ target_link_libraries(main ${Boost_LOG_LIBRARY}
         yaml-cpp)
 # target_link_libraries(${Boost_LIBRARIES})
 include_directories(${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
+
+add_executable(validate src/validation/validate.cpp)
+target_link_libraries(validate
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${CMAKE_THREAD_LIBS_INIT}
+        yaml-cpp)
