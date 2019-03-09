@@ -6,6 +6,7 @@
 #include "configuration.h"
 #include "logging.h"
 #include "exceptions.h"
+#include "validate.h"
 
 Configuration *Configuration::configuration = nullptr;
 
@@ -26,6 +27,8 @@ Configuration::Configuration() {
 }
 
 void Configuration::load_configuration(const string &config_path) {
+    Validation::validate_config(CONFIG_FULL_PATH);
+
     YAML::Node config_data = YAML::LoadFile(config_file_path);
 
     config_filter(config_data);
@@ -56,12 +59,6 @@ void Configuration::config_database(const YAML::Node &config) {
             main_config.database_config.archive_limit = config["database"]["archive"]["limit"].as<uint32_t>(DEFAULT_ARCHIVE_LIMIT);
         }
     }
-}
-
-void Configuration::error_fallback(const vector<string> &keys) {
-    string concat_keys;
-    for (const auto &key : keys) concat_keys += key;
-    Logging::log(debug, concat_keys + ": is left with its default value");
 }
 
 void Configuration::config_sensor(const YAML::Node &config) {

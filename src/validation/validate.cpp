@@ -3,9 +3,12 @@
 //
 
 #include "validate.h"
+#include "exceptions.h"
 
-bool check_key(const string &field_path, const bool &optional) {
-    string sensor_path = config_full_path;
+string Validation::sensor_config_full_path;
+
+void Validation::check_key(const string &field_path, const bool &optional) {
+    string sensor_path = sensor_config_full_path;
     YAML::Node node = YAML::LoadFile(sensor_path);
 
     string delimiter = ".";
@@ -27,7 +30,7 @@ bool check_key(const string &field_path, const bool &optional) {
     }
 }
 
-void iterate_whole_yaml(const YAML::Node &config, const YAML::Node &specs, const string &key) {
+void Validation::iterate_whole_yaml(const YAML::Node &config, const YAML::Node &specs, const string &key) {
     for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
         cout << key << " with " << it->first.Scalar() << " ";
         if (it->second.IsMap()) {
@@ -43,7 +46,7 @@ void iterate_whole_yaml(const YAML::Node &config, const YAML::Node &specs, const
     }
 }
 
-void specification_validatation(const YAML::Node &specs, const string &key) {
+void Validation::specification_validatation(const YAML::Node &specs, const string &key) {
     for (YAML::const_iterator it = specs.begin(); it != specs.end(); ++it) {
         string current_key;
         if (key.empty()) current_key = it->first.Scalar();
@@ -60,29 +63,10 @@ void specification_validatation(const YAML::Node &specs, const string &key) {
     }
 }
 
-void validate_config(const string &config_path) {
+void Validation::validate_config(const string &config_path) {
     YAML::Node specs = YAML::LoadFile(SPECS_CONFIG_PATH);
 
-    config_full_path = config_path;
+    sensor_config_full_path = config_path;
 
     specification_validatation(specs);
-}
-
-int main() {
-    string specs_path = (boost::filesystem::current_path() /
-                         boost::filesystem::path("doc/config_specs.yml")).generic_string();
-    string sensor_path = (boost::filesystem::current_path() /
-                          boost::filesystem::path("doc/sensor.yml")).generic_string();
-
-    YAML::Node specs = YAML::LoadFile(specs_path);
-    YAML::Node config = YAML::LoadFile(sensor_path);
-
-    try {
-        validate_config(sensor_path);
-    } catch (const ConfigurationError &er) {
-        cout << er.what() << endl;
-        return 1;
-    }
-
-    return 0;
 }
