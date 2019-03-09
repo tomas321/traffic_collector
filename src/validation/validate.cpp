@@ -2,19 +2,10 @@
 // Created by tomas on 06/03/19.
 //
 
-#include <yaml-cpp/yaml.h>
-#include <boost/filesystem.hpp>
-#include <string>
-#include <iostream>
+#include "validate.h"
 
-#include "exceptions.h"
-#include "configuration.h"
-
-using namespace std;
-using namespace boost::filesystem;
-
-bool check_key(const string &field_path, const bool optional) {
-    string sensor_path = CONFIG_FULL_PATH;
+bool check_key(const string &field_path, const bool &optional) {
+    string sensor_path = config_full_path;
     YAML::Node node = YAML::LoadFile(sensor_path);
 
     string delimiter = ".";
@@ -30,7 +21,7 @@ bool check_key(const string &field_path, const bool optional) {
 
     if (node.IsNull() && optional) {
         throw ConfigurationError("bad config after while");
-    } else if (! node.IsDefined() && ! optional) {
+    } else if (!node.IsDefined() && !optional) {
         string msg = "field " + field_path + " is missing\n";
         throw ConfigurationError(msg);
     }
@@ -52,13 +43,13 @@ void iterate_whole_yaml(const YAML::Node &config, const YAML::Node &specs, const
     }
 }
 
-void validate_config(const YAML::Node &specs, const YAML::Node config, const string &key = "") {
+void specification_validatation(const YAML::Node &specs, const string &key) {
     for (YAML::const_iterator it = specs.begin(); it != specs.end(); ++it) {
         string current_key;
         if (key.empty()) current_key = it->first.Scalar();
         else current_key = key + "." + it->first.Scalar();
         if (it->second.IsMap()) {
-            validate_config(it->second, config, current_key);
+            specification_validatation(it->second, current_key);
         } else if (it->second.IsScalar()) {
 //            cout << current_key << " has " << it->second.Scalar() << endl;
             check_key(current_key, it->second.as<bool>());
@@ -69,15 +60,25 @@ void validate_config(const YAML::Node &specs, const YAML::Node config, const str
     }
 }
 
-int main(void) {
-    string specs_path = (boost::filesystem::current_path() / boost::filesystem::path("doc/config_specs.yml")).generic_string();
-    string sensor_path = CONFIG_FULL_PATH;
+void validate_config(const string &config_path) {
+    YAML::Node specs = YAML::LoadFile(SPECS_CONFIG_PATH);
+
+    config_full_path = config_path;
+
+    specification_validatation(specs);
+}
+
+int main() {
+    string specs_path = (boost::filesystem::current_path() /
+                         boost::filesystem::path("doc/config_specs.yml")).generic_string();
+    string sensor_path = (boost::filesystem::current_path() /
+                          boost::filesystem::path("doc/sensor.yml")).generic_string();
 
     YAML::Node specs = YAML::LoadFile(specs_path);
     YAML::Node config = YAML::LoadFile(sensor_path);
 
     try {
-        validate_config(specs, config);
+        validate_config(sensor_path);
     } catch (const ConfigurationError &er) {
         cout << er.what() << endl;
         return 1;
