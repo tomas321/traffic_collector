@@ -68,9 +68,23 @@ private:
     void config_sensor(const YAML::Node&);
 
 public:
-    static Configuration *initialize();
+    static Configuration *initialize() {
+        if (configuration == nullptr) {
+            configuration = new Configuration();
+        }
+        return configuration;
+    }
     packed_settings get_configuration(); // maybe include separate getters of each configuration
-    static string enum_to_str(sniff_direction); // this is used by any other class/object to convert enum values to str
+    // this is used by any other class/object to convert enum values to str
+    static string enum_to_str(sniff_direction dir) {
+        map<sniff_direction, string> mapper;
+        mapper[sniff_direction::promisc] = "promisc";
+        mapper[sniff_direction::in] = "in";
+        mapper[sniff_direction::out] = "out";
+
+        // no mapper check of loaded configuration, because values already prechecked
+        return mapper[dir];
+    }
 };
 
 #endif //TRAFFIC_COLLECTOR_CONFIGURATION_H

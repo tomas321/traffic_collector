@@ -6,6 +6,15 @@
 
 Logging *Logging::logger = nullptr;
 
+void Logging::init(logging::trivial::severity_level level) {
+    if (logger == nullptr) {
+        logger = new Logging();
+        boost::log::core::get()->set_filter(
+                boost::log::trivial::severity >= level
+        );
+    }
+}
+
 Logging::Logging() {
     this->base_path = BASE_PATH;
 

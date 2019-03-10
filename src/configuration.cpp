@@ -10,13 +10,6 @@
 
 Configuration *Configuration::configuration = nullptr;
 
-Configuration *Configuration::initialize() {
-    if (configuration == nullptr) {
-        configuration = new Configuration();
-    }
-    return configuration;
-}
-
 Configuration::Configuration() {
     try {
         load_configuration(config_file_path);
@@ -88,16 +81,6 @@ sniff_direction Configuration::str_to_enum(string source) {
         Logging::log(error, "Invalid sniffing direction " + source);
         throw ConfigurationError();
     }
-}
-
-string Configuration::enum_to_str(sniff_direction dir) {
-    map<sniff_direction, string> mapper;
-    mapper[sniff_direction::promisc] = "promisc";
-    mapper[sniff_direction::in] = "in";
-    mapper[sniff_direction::out] = "out";
-
-    // no mapper check of loaded configuration, because values already prechecked
-    return mapper[dir];
 }
 
 packed_settings Configuration::get_configuration() {

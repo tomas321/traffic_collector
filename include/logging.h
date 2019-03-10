@@ -31,16 +31,8 @@ private:
     Logging();
 
 public:
-    static void init(logging::trivial::severity_level level) {
-        if (logger == nullptr) {
-            logger = new Logging();
-            boost::log::core::get()->set_filter(
-                    boost::log::trivial::severity >= level
-            );
-        }
-    }
+    static void init(logging::trivial::severity_level level);
     static void log(logging::trivial::severity_level level, const string &msg) {
-        cout << "=== logging: " << msg << endl;
         src::severity_logger< logging::trivial::severity_level > severity_logger;
         BOOST_LOG_SEV(severity_logger, level) << msg;
     }
