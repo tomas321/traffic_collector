@@ -1,0 +1,37 @@
+### HANDLE ###
+char errbuf[PCAP_ERRBUF_SIZE];
+   pcap_t *pcap_create(const char *source, char *errbuf) -> craete handle for `source` device
+
+### SETUP ###
+int pcap_set_promisc(pcap_t *, int promisc) -> promisc mode if promisc > 0
+int pcap_set_snaplen(pcap_t *, int snaplen) -> capture only headers
+int pcap_set_immediate_mode(pcap_t *, int mode) -> delivered to application as they arrive; if mode != 0
+int pcap_set_buffer_size(pcap_t *, int buffer) -> packet buffering of `buffer` bytes
+int pcap_set_tstamp_type(pcap_t *, int type) -> types defined in: https://www.tcpdump.org/manpages/pcap-tstamp.7.html
+    int pcap_list_tstamp_types(pcap_t *, int **tstamp_typesp);
+int pcap_list_datalinks(pcap_t *, int **list) -> *list pointing to available list of formats
+    int pcap_datalink(pcap_t *) -> returns packet datalink format https://www.tcpdump.org/linktypes.html
+int pcap_setnonblock(pcap_t *, int nonblock, char *errbuf) -> non blocking state when no packets are arriving
+int pcap_getnonblock(pcap_t *, char *errbuf) -> get the current state of blocking
+         errbuf is assumed to be able to hold at least PCAP_ERRBUF_SIZE chars
+int pcap_findalldevs(pcap_if_t **alldevsp, char *errbuf) -> return list of available devices
+void pcap_freealldevs(pcap_if_t *alldevs) -> must be called after working with devices list
+
+### FILTERS ###
+int pcap_lookupnet(const char *device, bpf_u_int32 *netp, bpf_u_int32 *maskp, char *errbuf) -> get net addr and mask
+int pcap_compile(pcap_t *p, struct bpf_program *fp, const char *str, int optimize, bpf_u_int32 netmask) -> compile
+     text filter specified in https://www.tcpdump.org/manpages/pcap-filter.7.html
+void pcap_freecode(struct bpf_program *) -> free compiled filter
+int pcap_setfilter(pcap_t *p, struct bpf_program *fp) -> set compiled filter to the handle
+
+### CAPTURE ###
+int pcap_activate(pcap_t *p) -> activate live capture
+int pcap_dispatch(pcap_t *, int cnt, pcap_handler callback, u_char *user)
+int pcap_loop(pcap_t *, int cnt, pcap_handler callback, u_char *user) -> supplies the callback function with:
+struct pcap_pkthdr{
+      ts -> struct timeval
+      caplen -> bpf_u_int32 type, available number of bytes
+      len -> bpf_u_int32 type, packet len. might be more than caplen
+}
+supplies the callback with const u_char pointer to the first caplen
+pcap_breakloop(pcap_t *) -> termiante packet capture

@@ -16,7 +16,10 @@ add_executable(main bin/main.cpp
         include/databese_controller.h
         include/exceptions.h
         include/validate.h
-        src/validation/validate.cpp)
+        src/validation/validate.cpp
+        src/input/collector.cpp
+        include/collector.h
+        include/functions.h)
 
 find_package(Boost 1.65 COMPONENTS log log_setup thread system filesystem REQUIRED)
 find_package(Threads REQUIRED)
@@ -28,7 +31,8 @@ target_link_libraries(main ${Boost_LOG_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${Boost_FILESYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        yaml-cpp)
+        yaml-cpp
+        pcap)
 # target_link_libraries(${Boost_LIBRARIES})
 include_directories(${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
 
@@ -41,3 +45,16 @@ target_link_libraries(validate
         ${Boost_FILESYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         yaml-cpp)
+
+add_executable(collect_net bin/collect.cpp
+        src/input/collector.cpp
+        include/collector.h
+        include/logging.h
+        src/logging.cpp)
+target_link_libraries(collect_net
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_THREAD_LIBRARY}
+        ${Boost_LOG_SETUP_LIBRARY}
+        ${Boost_LOG_LIBRARY}
+        ${CMAKE_THREAD_LIBS_INIT}
+        pcap)
