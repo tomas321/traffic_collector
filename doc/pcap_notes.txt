@@ -9,8 +9,10 @@ int pcap_set_immediate_mode(pcap_t *, int mode) -> delivered to application as t
 int pcap_set_buffer_size(pcap_t *, int buffer) -> packet buffering of `buffer` bytes
 int pcap_set_tstamp_type(pcap_t *, int type) -> types defined in: https://www.tcpdump.org/manpages/pcap-tstamp.7.html
     int pcap_list_tstamp_types(pcap_t *, int **tstamp_typesp);
-int pcap_list_datalinks(pcap_t *, int **list) -> *list pointing to available list of formats
+// only possible for activted handle
+\-> int pcap_list_datalinks(pcap_t *, int **list) -> *list pointing to available list of formats
     int pcap_datalink(pcap_t *) -> returns packet datalink format https://www.tcpdump.org/linktypes.html
+int pcap_setdirection(pcap_t *p, pcap_direction_t d);
 int pcap_setnonblock(pcap_t *, int nonblock, char *errbuf) -> non blocking state when no packets are arriving
 int pcap_getnonblock(pcap_t *, char *errbuf) -> get the current state of blocking
          errbuf is assumed to be able to hold at least PCAP_ERRBUF_SIZE chars
@@ -18,6 +20,8 @@ int pcap_findalldevs(pcap_if_t **alldevsp, char *errbuf) -> return list of avail
 void pcap_freealldevs(pcap_if_t *alldevs) -> must be called after working with devices list
 
 ### FILTERS ###
+!!!! WORK ONLY AFTER HANDLE HAS BEEN ACTIVATED (pcap_activate(handle))
+
 int pcap_lookupnet(const char *device, bpf_u_int32 *netp, bpf_u_int32 *maskp, char *errbuf) -> get net addr and mask
 int pcap_compile(pcap_t *p, struct bpf_program *fp, const char *str, int optimize, bpf_u_int32 netmask) -> compile
      text filter specified in https://www.tcpdump.org/manpages/pcap-filter.7.html
