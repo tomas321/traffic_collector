@@ -8,10 +8,9 @@
 
 #include <stdint-gcc.h>
 #include <string>
-#include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 
-#define CONFIG_FULL_PATH (boost::filesystem::current_path() / boost::filesystem::path("doc/sensor.yml")).generic_string()
+#define CONFIG_FULL_PATH "doc/sensor.yml"
 #define DEFAULT_BEATS_HOST "127.0.0.1"
 #define DEFAULT_BEATS_PORT 12000
 #define DEFAULT_ELASTIC_HOST "127.0.0.1"

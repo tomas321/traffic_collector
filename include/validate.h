@@ -6,14 +6,12 @@
 #define TRAFFIC_COLLECTOR_VALIDATE_H
 
 #include <yaml-cpp/yaml.h>
-#include <boost/filesystem.hpp>
 #include <string>
 #include <iostream>
 
-#define SPECS_CONFIG_PATH (boost::filesystem::current_path() / boost::filesystem::path("doc/config_specs.yml")).generic_string()
+#define SPECS_CONFIG_PATH "doc/config_specs.yml"
 
 using namespace std;
-using namespace boost::filesystem;
 
 class Validation {
 private:
