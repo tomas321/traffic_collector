@@ -30,7 +30,7 @@ private:
     int set_capture_handle(const string &device);
     int set_preferences();
     int set_direction_capture();
-    void set_direction_by_filter(const char *filter_str);
+    sniff_direction set_capture_direction(pcap_direction_t pcap_dir, sniff_direction sensor_dir);
     int activate_handle();
 
 public:

@@ -13,6 +13,8 @@ Collector::Collector(const sensor_settings &sensor_config, const filter_settings
     device_ip_addr = "";
     device_mac_addr = "";
     setup_handle();
+
+    pcap_close(capture_handle);
 }
 
 void Collector::setup_handle() {
@@ -43,21 +45,22 @@ int Collector::set_capture_handle(const string &device) {
                         snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
                         device_mac_addr = string(mac_addr);
 
-                        Logging::log(debug, string(current->name) + ": mac address: " + string(device_mac_addr) + " " + to_string(address->addr->sa_family));
-                        continue;
+                        Logging::log(debug, string(current->name) + ": mac address: " + string(device_mac_addr));
+                        break;
                     case AF_INET:
                         device_ip_addr = string(inet_ntoa(((struct sockaddr_in *) address->addr)->sin_addr));
-                        Logging::log(debug, string(current->name) + ": ip address: " + string(device_ip_addr) + " " + to_string(address->addr->sa_family));
-                        continue;
+                        Logging::log(debug, string(current->name) + ": ip address: " + string(device_ip_addr));
+                        break;
                     default:
-                        continue;
+                        break;
                 }
             }
             if (device_ip_addr.empty() && device_mac_addr.empty()) {
                 throw CaptureError("No addresses for selected device: " + device, error);
             } else {
-                pcap_freealldevs(alldevs);
                 capture_handle = pcap_create(current->name, errbuff);
+                Logging::log(debug, "Initialized pcap capture handle for: '" + string(current->name) + "'");
+                pcap_freealldevs(alldevs);
                 return 0;
             }
         }
@@ -89,42 +92,43 @@ int Collector::set_direction_capture() {
 
     switch (sensor_config.direction) {
         case promisc:
-            pcap_set_promisc(capture_handle, 1);
+            if (pcap_set_promisc(capture_handle, 1) != 0) {
+                throw CaptureError("Promiscuous mode attempt on a activated handle");
+            }
             return promisc;
         case in:
-            if (pcap_setdirection(capture_handle, PCAP_D_IN) == PCAP_ERROR) {
-                Logging::log(warning, string(pcap_geterr(capture_handle)));
-            } else {
-                filter_in = (device_ip_addr.empty()) ? FILTER_MAC(device_mac_addr, in) : FILTER_IP(device_ip_addr, in);
-                set_direction_by_filter(string(filter_in).c_str());
-            }
-            return in;
+            return set_capture_direction(PCAP_D_IN, in);
         case out:
-            if (pcap_setdirection(capture_handle, PCAP_D_IN) == PCAP_ERROR) {
-                Logging::log(warning, string(pcap_geterr(capture_handle)));
-            } else {
-                filter_out = (device_ip_addr.empty()) ? FILTER_MAC(device_mac_addr, out) : FILTER_IP(device_ip_addr, out);
-                set_direction_by_filter(string(filter_in).c_str());
-            }
-            return out;
+            return set_capture_direction(PCAP_D_OUT, out);
         default:
-            throw CaptureError("Unknown capture direction", error);
+            throw CaptureError("Unknown capture direction");
     }
 }
 
-void Collector::set_direction_by_filter(const char *filter_str) {
+sniff_direction Collector::set_capture_direction(pcap_direction_t pcap_dir, sniff_direction sensor_dir) {
     char errbuff[PCAP_ERRBUF_SIZE];
     bpf_u_int32 addr, mask;
-    struct bpf_program *filter_program;
-    filter_program = (struct bpf_program *) malloc(sizeof(struct bpf_program));
+    struct bpf_program filter_program;
+    string filter;
 
+    if (pcap_setdirection(capture_handle, pcap_dir) != PCAP_ERROR) {
+        return sensor_dir;
+    }
+
+    Logging::log(warning, string(pcap_geterr(capture_handle)));
+
+    filter = (device_ip_addr.empty()) ? FILTER_MAC(device_mac_addr, sensor_dir) : FILTER_IP(device_ip_addr, sensor_dir);
     pcap_lookupnet(sensor_config.interface.c_str(), &addr, &mask, errbuff);
 
-    activate_handle();
+    activate_handle(); // filter needs to be activated on an active capture handle !!
 
-    pcap_compile(capture_handle, filter_program, filter_str, 0, mask);
-    pcap_setfilter(capture_handle, filter_program);
-    Logging::log(debug, "sinff direction set using filter '" + string(filter_str) + "'");
+    if (pcap_compile(capture_handle, &filter_program, string(filter).c_str(), 0, mask) == PCAP_ERROR)
+        throw CaptureError("Unable to compile provided filter: " + filter);
+    if (pcap_setfilter(capture_handle, &filter_program) == PCAP_ERROR)
+        throw CaptureError("Unable to set compiled filter");
+    Logging::log(debug, "Capture direction set using filter '" + filter + "'");
+
+    return sensor_dir;
 }
 
 int Collector::activate_handle() {
@@ -134,6 +138,8 @@ int Collector::activate_handle() {
 
     if (ret > 0) Logging::log(warning, string(pcap_geterr(capture_handle)));
     else if (ret < 0 && ret != PCAP_ERROR_ACTIVATED) throw CaptureError(string(pcap_geterr(capture_handle)));
+    else if (ret == PCAP_ERROR_ACTIVATED) Logging::log(warning, "Attempting to activate already active handle");
     else return 0;
+
     return 1;
 }
