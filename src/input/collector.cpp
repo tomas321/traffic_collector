@@ -7,6 +7,8 @@
 #include "exceptions.h"
 #include "configuration.h"
 #include <linux/if_packet.h>
+#include <collector.h>
+
 
 Collector::Collector(const sensor_settings &sensor_config, const filter_settings &filter_config) : sensor_config(
         sensor_config), filter_config(filter_config) {
@@ -14,7 +16,7 @@ Collector::Collector(const sensor_settings &sensor_config, const filter_settings
     device_mac_addr = "";
     setup_handle();
 
-    pcap_close(capture_handle);
+//    capture_network_packets(10);
 }
 
 void Collector::setup_handle() {
@@ -142,4 +144,27 @@ int Collector::activate_handle() {
     else return 0;
 
     return 1;
+}
+
+int Collector::capture_network_packets(int packet_count) {
+    // TODO: check headers
+
+    if (capture_handle)
+        pcap_loop(capture_handle, packet_count, packet_callback, nullptr);
+}
+
+void Collector::packet_callback(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes) {
+    cout << "packet size:" << to_string(h->caplen) << "\t" << endl;
+}
+
+const string &Collector::getDevice_ip_addr() const {
+    return device_ip_addr;
+}
+
+const string &Collector::getDevice_mac_addr() const {
+    return device_mac_addr;
+}
+
+Collector::~Collector() {
+    pcap_close(capture_handle);
 }

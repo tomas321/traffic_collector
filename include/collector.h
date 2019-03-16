@@ -33,8 +33,18 @@ private:
     sniff_direction set_capture_direction(pcap_direction_t pcap_dir, sniff_direction sensor_dir);
     int activate_handle();
 
+    static void packet_callback(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes);
+
 public:
     Collector(const sensor_settings &sensor_config, const filter_settings &filter_config);
+
+    virtual ~Collector();
+
+    int capture_network_packets(int packet_count = -1);
+
+    const string &getDevice_ip_addr() const;
+
+    const string &getDevice_mac_addr() const;
 };
 
 
