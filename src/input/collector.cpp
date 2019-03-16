@@ -6,6 +6,8 @@
 #include "logging.h"
 #include "exceptions.h"
 #include "configuration.h"
+#include "parser.h"
+
 #include <linux/if_packet.h>
 #include <collector.h>
 
@@ -84,12 +86,12 @@ int Collector::set_preferences() {
         string ts_type(pcap_tstamp_type_val_to_name(PCAP_TSTAMP_ADAPTER));
         Logging::log(warning, "Cannot set specified timestamp type (" + ts_type + ")");
     }
-    set_direction = set_direction_capture();
+    set_direction = distinguish_capture_direction();
     Logging::log(debug, "Traffic will capture: " + Configuration::enum_to_str(static_cast<sniff_direction>(set_direction)));
     return 0;
 }
 
-int Collector::set_direction_capture() {
+int Collector::distinguish_capture_direction() {
     string filter_in, filter_out;
 
     switch (sensor_config.direction) {
@@ -147,14 +149,17 @@ int Collector::activate_handle() {
 }
 
 int Collector::capture_network_packets(int packet_count) {
-    // TODO: check headers
-
     if (capture_handle)
-        pcap_loop(capture_handle, packet_count, packet_callback, nullptr);
+        pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char*>(this));
 }
 
-void Collector::packet_callback(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes) {
-    cout << "packet size:" << to_string(h->caplen) << "\t" << endl;
+void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, const u_char *bytes) {
+    auto this_object = reinterpret_cast<Collector *>(object);
+    int datalink = pcap_datalink(this_object->capture_handle);
+
+    if (datalink == DLT_EN10MB) {
+        Parser::process_packet(meta->len, meta->caplen, meta->ts, bytes, datalink);
+    }
 }
 
 const string &Collector::getDevice_ip_addr() const {

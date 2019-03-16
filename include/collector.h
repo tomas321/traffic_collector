@@ -72,7 +72,7 @@ private:
     int activate_handle();
 
     /**
-     * Packet processing function based on predefined typedef.
+     * Main capture callback based on predefined typedef.
      *
      * @param object User defined parameter. In this case the Collector object.
      * @param meta Packet meta data.
