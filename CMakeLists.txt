@@ -8,7 +8,10 @@ add_definitions(-DBOOST_LOG_DYN_LINK)
 find_package(Boost 1.65 COMPONENTS log log_setup thread system REQUIRED)
 find_package(Threads REQUIRED)
 find_package(yaml-cpp 0.5 REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/include
+        ${Boost_INCLUDE_DIR}
+        ${YAML_CPP_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/header)
 
 file(GLOB_RECURSE sources src/*.cpp include/*.h)
 set(common_libs
@@ -18,7 +21,9 @@ set(common_libs
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         yaml-cpp
-        pcap)
+        pcap
+        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/Lib/libPacket++.a
+        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Common++/Lib/Release/libCommon++.a)
 
 ## MAIN ##
 add_executable(main bin/main.cpp ${sources})
