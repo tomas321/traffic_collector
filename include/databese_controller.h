@@ -6,7 +6,7 @@
 #define TRAFFIC_COLLECTOR_DATABESE_CONTROLLER_H
 
 
-class databese_controller {
+class DatabeseController {
 
 };
 

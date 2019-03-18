@@ -6,7 +6,11 @@
 #include "logging.h"
 #include "exceptions.h"
 #include "configuration.h"
+#include "parser.h"
+
 #include <linux/if_packet.h>
+#include <collector.h>
+
 
 Collector::Collector(const sensor_settings &sensor_config, const filter_settings &filter_config) : sensor_config(
         sensor_config), filter_config(filter_config) {
@@ -14,7 +18,7 @@ Collector::Collector(const sensor_settings &sensor_config, const filter_settings
     device_mac_addr = "";
     setup_handle();
 
-    pcap_close(capture_handle);
+//    capture_network_packets(10);
 }
 
 void Collector::setup_handle() {
@@ -82,12 +86,12 @@ int Collector::set_preferences() {
         string ts_type(pcap_tstamp_type_val_to_name(PCAP_TSTAMP_ADAPTER));
         Logging::log(warning, "Cannot set specified timestamp type (" + ts_type + ")");
     }
-    set_direction = set_direction_capture();
+    set_direction = distinguish_capture_direction();
     Logging::log(debug, "Traffic will capture: " + Configuration::enum_to_str(static_cast<sniff_direction>(set_direction)));
     return 0;
 }
 
-int Collector::set_direction_capture() {
+int Collector::distinguish_capture_direction() {
     string filter_in, filter_out;
 
     switch (sensor_config.direction) {
@@ -142,4 +146,30 @@ int Collector::activate_handle() {
     else return 0;
 
     return 1;
+}
+
+int Collector::capture_network_packets(int packet_count) {
+    if (capture_handle)
+        pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char*>(this));
+}
+
+void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, const u_char *bytes) {
+    auto this_object = reinterpret_cast<Collector *>(object);
+    int datalink = pcap_datalink(this_object->capture_handle);
+
+    if (datalink == DLT_EN10MB) {
+        Parser::process_packet(meta->len, meta->caplen, meta->ts, bytes, datalink);
+    }
+}
+
+const string &Collector::getDevice_ip_addr() const {
+    return device_ip_addr;
+}
+
+const string &Collector::getDevice_mac_addr() const {
+    return device_mac_addr;
+}
+
+Collector::~Collector() {
+    pcap_close(capture_handle);
 }
