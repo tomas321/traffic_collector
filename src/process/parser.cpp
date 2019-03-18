@@ -35,16 +35,14 @@ const map<pcpp::ProtocolType, const string> Parser::supported_layers = {
 };
 
 string Parser::timeval_to_string(const struct timeval &ts) {
-    time_t nowtime;
-    struct tm *nowtm;
-    char tmbuf[64], buf[64];
+    struct tm *time_struct;
+    char str_time[64], str_timestamp[64];
 
-    nowtime = ts.tv_sec;
-    nowtm = localtime(&nowtime);
-    strftime(tmbuf, sizeof(tmbuf), "%Y-%m-%d %H:%M:%S", nowtm);
-    snprintf(buf, sizeof(buf), "%s.%06ld", tmbuf, ts.tv_usec);
+    time_struct = localtime(&ts.tv_sec);
+    strftime(str_time, sizeof(str_time), "%Y-%m-%dT%H:%M:%S", time_struct);
+    snprintf(str_timestamp, sizeof(str_timestamp), "%s.%06ld", str_time, ts.tv_usec);
 
-    return string(buf);
+    return string(str_timestamp);
 }
 
 void Parser::print_packet(const string &timestamp, pcpp::RawPacket *raw_packet) {
