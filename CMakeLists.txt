@@ -11,7 +11,8 @@ find_package(yaml-cpp 0.5 REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/include
         ${Boost_INCLUDE_DIR}
         ${YAML_CPP_INCLUDE_DIR}
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/header)
+        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/header
+        ${PROJECT_SOURCE_DIR}/lib)
 
 file(GLOB_RECURSE sources src/*.cpp include/*.h)
 set(common_libs
@@ -36,3 +37,8 @@ target_link_libraries(validate ${common_libs})
 ## COLLECT ##
 add_executable(collect_net bin/collect.cpp ${sources})
 target_link_libraries(collect_net ${common_libs})
+
+## JSON ##
+add_executable(json bin/json.cpp
+        include/json.h
+        src/process/json.cpp)
