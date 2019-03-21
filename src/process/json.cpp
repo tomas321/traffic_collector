@@ -10,31 +10,35 @@ Json::Json() {
 }
 
 int Json::add_specific(const string &key, int value) {
-    json_writer->Key(key.c_str());
-    json_writer->Int(value);
+    return (json_writer->Key(key.c_str()) && json_writer->Int(value));
+}
 
-    return 0;
+int Json::add_specific(const string &key, uint32_t value) {
+    return (json_writer->Key(key.c_str()) && json_writer->Uint(value));
+}
+
+int Json::add_specific(const string &key, uint16_t value) {
+    return (json_writer->Key(key.c_str()) && json_writer->Uint(value));
+}
+
+int Json::add_specific(const string &key, uint8_t value) {
+    return (json_writer->Key(key.c_str()) && json_writer->Uint(value));
 }
 
 int Json::add_specific(const string &key, bool value) {
-    json_writer->Key(key.c_str());
-    json_writer->Bool(value);
-
-    return 0;
+    return (json_writer->Key(key.c_str()) && json_writer->Bool(value));
 }
 
 int Json::add_specific(const string &key, double value) {
-    json_writer->Key(key.c_str());
-    json_writer->Double(value);
-
-    return 0;
+    return (json_writer->Key(key.c_str()) && json_writer->Double(value));
 }
 
 int Json::add_specific(const string &key, string value) {
-    json_writer->Key(key.c_str());
-    json_writer->String(value.c_str());
+    return (json_writer->Key(key.c_str()) && json_writer->String(value.c_str()));
+}
 
-    return 0;
+int Json::add_specific(const string &key, char *value) {
+    return (json_writer->Key(key.c_str()) && json_writer->String(value));
 }
 
 const string Json::stringify() {

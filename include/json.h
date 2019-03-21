@@ -37,6 +37,9 @@ private:
      * @return 0 on success.
      */
     int add_specific(const string &key, int value);
+    int add_specific(const string &key, uint32_t value);
+    int add_specific(const string &key, uint16_t value);
+    int add_specific(const string &key, uint8_t value);
 
     /**
      * Add string value.
@@ -46,6 +49,7 @@ private:
      * @return 0 on success.
      */
     int add_specific(const string &key, string value);
+    int add_specific(const string &key, char *value);
 
     /**
      * Add double value.
@@ -81,14 +85,16 @@ public:
      */
     template<typename T>
     int add(string key, T value) {
-        return Json::add_specific(key, value);
+        if (Json::add_specific(key, value)) return 0;
+        else return 1;
     }
 
-    template<typename T>
-    void add_object(const string &root, string key, T value) {
-        json_writer->Key(root.c_str());
+    void start_object(const string &key) {
+        json_writer->Key(key.c_str());
         json_writer->StartObject();
-        add(key, value);
+    }
+
+    void end_object() {
         json_writer->EndObject();
     }
 
