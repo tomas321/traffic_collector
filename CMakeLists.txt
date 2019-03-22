@@ -11,7 +11,6 @@ find_package(yaml-cpp 0.5 REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/include
         ${Boost_INCLUDE_DIR}
         ${YAML_CPP_INCLUDE_DIR}
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/header
         ${PROJECT_SOURCE_DIR}/lib)
 
 file(GLOB_RECURSE sources src/*.cpp include/*.h)
@@ -22,9 +21,7 @@ set(common_libs
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         yaml-cpp
-        pcap
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/Lib/libPacket++.a
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Common++/Lib/Release/libCommon++.a)
+        pcap)
 
 ## MAIN ##
 add_executable(main bin/main.cpp ${sources})
@@ -42,3 +39,6 @@ target_link_libraries(collect_net ${common_libs})
 add_executable(json bin/json.cpp
         include/json.h
         src/process/json.cpp)
+
+## TESTS ##
+add_executable(tests test/test_example.cpp test/test_main.cpp)

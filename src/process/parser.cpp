@@ -3,36 +3,7 @@
 //
 
 #include "parser.h"
-
-const map<pcpp::ProtocolType, const string> Parser::supported_layers = {
-        {pcpp::Ethernet, "ethernet"},
-        {pcpp::ARP, "arp"},
-        {pcpp::IP, "ip"},
-        {pcpp::IPv4, "ipv4"},
-        {pcpp::IPv6, "ipv6"},
-        {pcpp::ICMP, "icmp"},
-        {pcpp::UDP, "udp"},
-        {pcpp::TCP, "tcp"},
-        {pcpp::SSL, "ssl"},
-        {pcpp::DHCP, "dhcp"},
-        {pcpp::HTTP, "http"},
-        {pcpp::HTTPRequest, "http_request"},
-        {pcpp::HTTPResponse, "http_response"},
-        {pcpp::DNS, "dns"},
-        {pcpp::SDP, "sdp"},
-        {pcpp::PPPoE, "pppoe"},
-        {pcpp::VLAN, "vlan"},
-        {pcpp::PPP_PPTP, "ppp"},
-        {pcpp::SIP, "sip"},
-        {pcpp::SIPResponse, "sip_response"},
-        {pcpp::SIPRequest, "sip_request"},
-        {pcpp::GRE, "gre"},
-        {pcpp::MPLS, "mpls"},
-        {pcpp::IGMP, "igmp"},
-        {pcpp::IGMPv1, "igmpv1"},
-        {pcpp::IGMPv2, "igmpv2"},
-        {pcpp::IGMPv3, "igmpv3"}
-};
+#include "json.h"
 
 string Parser::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
@@ -45,17 +16,37 @@ string Parser::timeval_to_string(const struct timeval &ts) {
     return string(str_timestamp);
 }
 
-void Parser::print_packet(const string &timestamp, pcpp::RawPacket *raw_packet) {
-    pcpp::Packet parsed_packet(raw_packet);
-
+void Parser::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
     cout << "[" << timestamp << "]" << endl;
-    for (pcpp::Layer *layer = parsed_packet.getFirstLayer(); layer != NULL; layer = layer->getNextLayer()) {
-        cout << "\t" << layer->toString() << endl;
-    }
+    // TODO: loop all layers ?? and print
 }
 
-void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const unsigned char *packet, const int datalink) {
-    auto *raw_packet = new pcpp::RawPacket(packet, caplen, timestamp, true, static_cast<pcpp::LinkLayerType>(datalink));
+void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, uint8_t *packet, const int datalink) {
+    // TODO: rethink jsonizing API and all available data
+    jsonize_packet(packet);
+}
 
-    print_packet(timeval_to_string(timestamp), raw_packet);
+string Parser::jsonize_packet(uint8_t *raw_packet) {
+    string json_packet = "json_packet";
+
+    // TODO: loop all data and one by one parse_protocol
+
+    return json_packet;
+}
+
+string Parser::parse_protocol(Packet::Type type, uint8_t *packet_layer) {
+    Json json;
+
+    switch (type) {
+        case Packet::Type::Ethernet:
+            json.start_object("ethernet");
+            // TODO: add all ethernet header data
+            json.end_object();
+            return json.stringify();
+        case Packet::Type::IPv4:
+            json.start_object("ip");
+            // TODO: add all ip header data
+            json.end_object();
+            return json.stringify();
+    }
 }
