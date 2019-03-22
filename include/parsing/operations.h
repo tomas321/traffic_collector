@@ -6,6 +6,7 @@
 #define TRAFFIC_COLLECTOR_PROTOCOL_TYPE_H
 
 #include <map>
+#include <cstring>
 
 namespace IPAddress {
     /**
@@ -43,8 +44,15 @@ namespace MACAddress {
     }
 }
 
-namespace Packet {
+namespace Bytes {
+    const uint16_t merge_bytes(const uint8_t left, const uint8_t right) {
+        return static_cast<uint16_t>( ((left & 0x00ff) << 8) | (right & 0x00ff) );
+    }
 
+    const uint32_t merge_bytes(const uint8_t one, const uint8_t two, const uint8_t three, const uint8_t four) {
+        return static_cast<uint32_t>(((one & 0x000000ff) << 24) | ((two & 0x000000ff) << 16) |
+                                     ((three & 0x000000ff) << 8) | (four & 0x000000ff));
+    }
 };
 
 #endif //TRAFFIC_COLLECTOR_PROTOCOL_TYPE_H

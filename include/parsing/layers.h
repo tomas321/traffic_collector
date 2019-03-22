@@ -48,12 +48,12 @@ public:
         uint16_t ethertype;
     };
 
-    static struct Ethernet_header *parse(uint8_t *bytes) {
+    static Ethernet_header *parse(uint8_t *bytes) {
         auto *eth = (Ethernet_header *) malloc(sizeof(Ethernet_header));
 
         memcpy(eth->dst_mac, bytes, 6);
         memcpy(eth->src_mac, (bytes + 6), 6);
-        eth->ethertype = (bytes[12] << 8) | bytes[13];
+        eth->ethertype = Bytes::merge_bytes(bytes[12], bytes[13]);
 
         return eth;
     }
@@ -72,6 +72,22 @@ public:
         uint8_t target_mac[6];
         uint32_t target_ip;
     };
+
+    static ARP_header *parse(uint8_t *bytes) {
+        auto *arp = (ARP_header *) malloc(sizeof(ARP_header));
+
+        arp->hw_type = Bytes::merge_bytes(bytes[0], bytes[1]);
+        arp->ip_type = Bytes::merge_bytes(bytes[2], bytes[3]);
+        arp->hwaddr_len = bytes[4];
+        arp->l3addr_len = bytes[5];
+        arp->opcode = Bytes::merge_bytes(bytes[6], bytes[7]);
+        memcpy(arp->sender_mac, (bytes + 8), 6);
+        arp->sender_ip = Bytes::merge_bytes(bytes[14], bytes[15], bytes[16], bytes[17]);
+        memcpy(arp->target_mac, (bytes + 18), 6);
+        arp->target_ip = Bytes::merge_bytes(bytes[24], bytes[25], bytes[26], bytes[27]);
+
+        return arp;
+    }
 };
 
 class IPv4 : public Layer {
@@ -96,16 +112,18 @@ public:
 
         ipv4->version = static_cast<uint8_t>( (bytes[0] & 0xf0) >> 4 );
         ipv4->ihl = static_cast<uint8_t>(bytes[0] & 0x0f);
-        ipv4->tos =bytes[1];
-        ipv4->total_length = static_cast<uint16_t>( ((bytes[2] & 0x00ff) << 8) | (bytes[3] & 0x00ff) );
-        ipv4->identification = static_cast<uint16_t>( ((bytes[4] & 0x00ff) << 8) | (bytes[5] & 0x00ff) );
+        ipv4->tos = bytes[1];
+        ipv4->total_length = Bytes::merge_bytes(bytes[2], bytes[3]);
+        ipv4->identification = Bytes::merge_bytes(bytes[4], bytes[5]);
         ipv4->flags = static_cast<uint8_t>( (bytes[6] >> 5) & 0x07 );
         ipv4->offset = static_cast<uint16_t>( ((bytes[6] & 0x001f) << 5) | bytes[7] );
         ipv4->ttl = bytes[8];
         ipv4->protocol = bytes[9];
-        ipv4->hdr_checksum = static_cast<uint16_t>( ((bytes[10] & 0x00ff) << 8) | (bytes[11] & 0x00ff) );
-        ipv4->src_ip = static_cast<uint32_t>( ((bytes[12] & 0x000000ff) << 24) | ((bytes[13] & 0x000000ff) << 16) | ((bytes[14] & 0x000000ff) << 8) | (bytes[15] & 0x000000ff) );
-        ipv4->dst_ip = static_cast<uint32_t>( ((bytes[16] & 0x000000ff) << 24) | ((bytes[17] & 0x000000ff) << 16) | ((bytes[18] & 0x000000ff) << 8) | (bytes[19] & 0x000000ff) );
+        ipv4->hdr_checksum = Bytes::merge_bytes(bytes[10], bytes[11]);
+        ipv4->src_ip = Bytes::merge_bytes(bytes[12], bytes[13], bytes[14], bytes[15]);
+        ipv4->dst_ip = Bytes::merge_bytes(bytes[16], bytes[17], bytes[18], bytes[19]);
+
+        return ipv4;
     }
 };
 
@@ -121,6 +139,14 @@ public:
         uint16_t src_ip[8];
         uint16_t dst_ip[8];
     };
+
+    static IPv6_header *parse(uint8_t *bytes) {
+        auto ipv6 = (IPv6_header *) malloc(sizeof(IPv6_header));
+
+        // TODO: complete IPv6 parsing
+
+        return ipv6;
+    }
 };
 
 class ICMP : public Layer {
@@ -131,6 +157,17 @@ public:
         uint16_t hdr_checksum;
         // and further fields for all code/type combinations
     };
+
+    static ICMP_header *parse(uint8_t *bytes) {
+        auto *icmp = (ICMP_header *) malloc(sizeof(ICMP_header));
+
+        icmp->type = bytes[0];
+        icmp->code = bytes[1];
+        icmp->hdr_checksum = Bytes::merge_bytes(bytes[2], bytes[3]);
+        // TODO: add other fields
+
+        return icmp;
+    }
 };
 
 class UDP : public Layer {
@@ -142,6 +179,20 @@ public:
         uint16_t checksum;
         uint8_t *data;
     };
+
+    static UDP_header *parse(uint8_t *bytes) {
+        auto *udp = (UDP_header *) malloc(sizeof(UDP_header));
+
+        udp->src_port = Bytes::merge_bytes(bytes[0], bytes[1]);
+        udp->dst_port = Bytes::merge_bytes(bytes[2], bytes[3]);
+        udp->length = Bytes::merge_bytes(bytes[4], bytes[5]);
+        udp->checksum = Bytes::merge_bytes(bytes[6], bytes[7]);
+
+        udp->data = (uint8_t *) malloc(static_cast<size_t>(udp->length - 8));
+        memcpy(udp->data, (bytes + 8), static_cast<size_t>(udp->length - 8));
+
+        return udp;
+    }
 };
 
 class TCP : public Layer {
@@ -159,6 +210,22 @@ public:
         uint16_t urgent_ptr;
         // tcp options;
     };
+
+    static TCP_header *parse(uint8_t *bytes) {
+        auto *tcp = (TCP_header *) malloc(sizeof(TCP_header));
+
+        tcp->src_port = Bytes::merge_bytes(bytes[0], bytes[1]);
+        tcp->dst_port = Bytes::merge_bytes(bytes[2], bytes[3]);
+        tcp->seq = Bytes::merge_bytes(bytes[4], bytes[5], bytes[6], bytes[7]);
+        tcp->ack = Bytes::merge_bytes(bytes[8], bytes[9], bytes[10], bytes[11]);
+        tcp->offset = static_cast<uint8_t>( (bytes[12] & 0xf0) >> 4 );
+        tcp->control_bits = static_cast<uint8_t>(bytes[13] & 0x3f);
+        tcp->window = Bytes::merge_bytes(bytes[14], bytes[15]);
+        tcp->checksum = Bytes::merge_bytes(bytes[16], bytes[17]);
+        tcp->urgent_ptr = Bytes::merge_bytes(bytes[18], bytes[19]);
+
+        return tcp;
+    }
 };
 
 #endif //TRAFFIC_COLLECTOR_LAYER_H
