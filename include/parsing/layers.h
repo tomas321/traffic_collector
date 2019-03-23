@@ -143,7 +143,18 @@ public:
     static IPv6_header *parse(uint8_t *bytes) {
         auto ipv6 = (IPv6_header *) malloc(sizeof(IPv6_header));
 
-        // TODO: complete IPv6 parsing
+        ipv6->version = static_cast<uint8_t>((bytes[0] & 0xf0) >> 4);
+        ipv6->traffic_class = static_cast<uint8_t>( ((bytes[0] & 0x0f) << 4) | ((bytes[1] & 0xf0) >> 4) );
+        ipv6->flow_label = Bytes::merge_bytes(0x00, static_cast<const uint8_t>(bytes[1] & 0x0f), bytes[2], bytes[3]);
+        ipv6->payload_len = Bytes::merge_bytes(bytes[4], bytes[5]);
+        ipv6->next_hdr = bytes[6];
+        ipv6->hop_limit = bytes[7];
+        int j = 0;
+        for (int i = 8; i < 24; i += 2)
+            ipv6->src_ip[j++] = Bytes::merge_bytes(bytes[i], bytes[i + 1]);
+        j = 0;
+        for (int i = 24; i < 40; i += 2)
+            ipv6->dst_ip[j++] = Bytes::merge_bytes(bytes[i], bytes[i + 1]);
 
         return ipv6;
     }

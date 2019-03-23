@@ -268,3 +268,44 @@ TEST_CASE ("Test TCP header parsing") {
         }
     }
 }
+
+TEST_CASE ("Test IPv6 header parsing") {
+    uint8_t x[] = {
+            0x60, 0x04, 0xeb, 0xed, 0x00, 0x95, 0x11, 0xff,
+            0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xae, 0x8f, 0x27, 0x94, 0x6e, 0xe1, 0x42, 0x4a,
+            0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb
+    };
+
+
+    SECTION ("Check IPv6 layer") {
+        WHEN ("Header data is parsed") {
+            auto ip = IPv6::parse(x);
+            THEN ("Version should match") {
+                REQUIRE(ip->version == 0x06);
+            }
+            THEN ("Traffic class should match") {
+                REQUIRE(ip->traffic_class == 0x00);
+            }
+            THEN ("Flow label should match") {
+                REQUIRE(ip->flow_label == 0x0004ebed);
+            }
+            THEN ("Payload length should match") {
+                REQUIRE(ip->payload_len == 0x0095);
+            }
+            THEN ("Next header should match") {
+                REQUIRE(ip->next_hdr == 0x11);
+            }
+            THEN ("Hop limit should match") {
+                REQUIRE(ip->hop_limit == 0xff);
+            }
+            THEN ("Source IP should match") {
+                REQUIRE_THAT(IPv6Address::to_string(ip->src_ip), Catch::Matchers::Equals("fe80:0000:0000:0000:ae8f:2794:6ee1:424a", Catch::CaseSensitive::No));
+            }
+            THEN ("Destination IP should match") {
+                REQUIRE_THAT(IPv6Address::to_string(ip->dst_ip), Catch::Matchers::Equals("ff02:0000:0000:0000:0000:0000:0000:00fb", Catch::CaseSensitive::No));
+            }
+        }
+    }
+}
