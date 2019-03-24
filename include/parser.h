@@ -10,6 +10,7 @@
 #include <map>
 
 #include "parsing/layer.h"
+#include "json.h"
 
 using namespace std;
 
@@ -40,13 +41,13 @@ private:
     static string jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp);
 
     /**
-     * Stringify packet layer to string.
+     * Packet layer to Json object.
      *
-     * @param type Packet protocol type.
+     * @param json Json object to be appended.
      * @param packet_layer Pakcet layer data.
-     * @return Json string.
+     * @return 0 on success, else 1;
      */
-    static string layer_to_json(Layer *packet_layer);
+    static int layer_to_json(Json *json, Layer *packet_layer);
 
 public:
 
