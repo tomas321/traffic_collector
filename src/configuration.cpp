@@ -68,7 +68,6 @@ void Configuration::config_sensor(const YAML::Node &config) {
 }
 
 sniff_direction Configuration::str_to_enum(string source) {
-    /* TODO: make mapper a public thing */
     map<string, sniff_direction> mapper;
     mapper["promisc"] = sniff_direction::promisc;
     mapper["in"] = sniff_direction::in;

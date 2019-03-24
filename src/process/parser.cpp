@@ -29,7 +29,6 @@ void Parser::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
 }
 
 void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
-    // TODO: rethink jsonizing API and all available data
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
 }
 
