@@ -42,4 +42,5 @@ add_executable(json bin/json.cpp
         src/process/json.cpp)
 
 ## TESTS ##
-add_executable(tests test/test_example.cpp test/test_main.cpp ${parsing_lib})
+add_executable(test_acpket_parsing test/test_example.cpp test/test_main.cpp ${parsing_lib})
+add_executable(test_json_lib test/test_json_lib.cpp test/test_main.cpp src/process/json.cpp include/json.h)
