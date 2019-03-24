@@ -11,9 +11,10 @@ find_package(yaml-cpp 0.5 REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/include
         ${Boost_INCLUDE_DIR}
         ${YAML_CPP_INCLUDE_DIR}
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/header)
+        ${PROJECT_SOURCE_DIR}/lib)
 
 file(GLOB_RECURSE sources src/*.cpp include/*.h)
+file(GLOB_RECURSE parsing_lib src/process/parsing/*.cpp include/parsing/*.h)
 set(common_libs
         ${Boost_LOG_LIBRARY}
         ${Boost_LOG_SETUP_LIBRARY}
@@ -21,9 +22,7 @@ set(common_libs
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
         yaml-cpp
-        pcap
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Packet++/Lib/libPacket++.a
-        ${PROJECT_SOURCE_DIR}/lib/pcap_parser/Common++/Lib/Release/libCommon++.a)
+        pcap)
 
 ## MAIN ##
 add_executable(main bin/main.cpp ${sources})
@@ -36,3 +35,12 @@ target_link_libraries(validate ${common_libs})
 ## COLLECT ##
 add_executable(collect_net bin/collect.cpp ${sources})
 target_link_libraries(collect_net ${common_libs})
+
+## JSON ##
+add_executable(json bin/json.cpp
+        include/json.h
+        src/process/json.cpp)
+
+## TESTS ##
+add_executable(test_acpket_parsing test/test_example.cpp test/test_main.cpp ${parsing_lib})
+add_executable(test_json_lib test/test_json_lib.cpp test/test_main.cpp src/process/json.cpp include/json.h)

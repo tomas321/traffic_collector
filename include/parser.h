@@ -7,9 +7,10 @@
 
 #include <stdint-gcc.h>
 #include <iostream>
-#include <Packet.h>
-#include <RawPacket.h>
 #include <map>
+
+#include "parsing/layer.h"
+#include "json.h"
 
 using namespace std;
 
@@ -29,10 +30,26 @@ private:
      * @param timestamp String timestamp.
      * @param packet Raw packet object.
      */
-    static void print_packet(const string &timestamp, pcpp::RawPacket *raw_packet);
+    static void print_packet_layers(const string &timestamp, uint8_t *raw_packet);
+
+    /**
+     * Parse packet to json string.
+     *
+     * @param packet Address of parsed packet object.
+     * @return Json string
+     */
+    static string jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp);
+
+    /**
+     * Packet layer to Json object.
+     *
+     * @param json Json object to be appended.
+     * @param packet_layer Pakcet layer data.
+     * @return 0 on success, else 1;
+     */
+    static int layer_to_json(Json *json, Layer *packet_layer);
 
 public:
-    static const map<pcpp::ProtocolType , const string> supported_layers;
 
     /**
      * Packet processing.
@@ -40,7 +57,7 @@ public:
      * @param meta Packet metadata including length and capture timestamp.
      * @param packet Packet bytes.
      */
-    static void process_packet(uint32_t packet_len, uint32_t caplen, const struct timeval &timestamp, const unsigned char *packet, int datalink);
+    static void process_packet(uint32_t packet_len, uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, int datalink);
 };
 
 
