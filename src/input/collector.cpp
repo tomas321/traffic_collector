@@ -5,11 +5,9 @@
 #include "collector.h"
 #include "logging.h"
 #include "exceptions.h"
-#include "configuration.h"
-#include "parser.h"
 
 #include <linux/if_packet.h>
-#include <collector.h>
+#include <parser.h>
 
 
 Collector::Collector(const sensor_settings &sensor_config, const filter_settings &filter_config) : sensor_config(

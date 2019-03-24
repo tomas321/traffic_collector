@@ -4,8 +4,16 @@
 
 #include <iostream>
 #include "catch.hpp"
+
+#include "parsing/icmp.h"
+#include "parsing/tcp.h"
+#include "parsing/udp.h"
+#include "parsing/arp.h"
+#include "parsing/ipv4.h"
+#include "parsing/ipv6.h"
+#include "parsing/ethernet.h"
 #include "parsing/operations.h"
-#include "parsing/layers.h"
+#include "parsing/packet.h"
 
 TEST_CASE ("Test Ethernet header parsing") {
     uint8_t x[] = {
@@ -15,17 +23,17 @@ TEST_CASE ("Test Ethernet header parsing") {
 
     SECTION ("Check Ethernet layer") {
         WHEN ("Header data is parsed") {
-            auto eth = Ethernet::parse(x);
+            auto eth = new Ethernet(x);
             THEN ("Ethertype should match") {
-                REQUIRE_THAT(Packet::supported_layers.at(static_cast<Packet::Type >(eth->ethertype)),
+                REQUIRE_THAT(Layers::layer_string.at(static_cast<Layers::Type >(eth->header->ethertype)),
                              Catch::Matchers::Equals("ipv4", Catch::CaseSensitive::No));
             }
             THEN ("Destination MAC should match") {
-                REQUIRE_THAT(MACAddress::to_string(eth->dst_mac),
+                REQUIRE_THAT(MACAddress::to_string(eth->header->dst_mac),
                              Catch::Matchers::Equals("2C:30:33:F9:60:C0", Catch::CaseSensitive::No));
             }
             THEN ("Source MAC should match") {
-                REQUIRE_THAT(MACAddress::to_string(eth->src_mac),
+                REQUIRE_THAT(MACAddress::to_string(eth->header->src_mac),
                              Catch::Matchers::Equals("AC:E2:D3:5A:30:08", Catch::CaseSensitive::No));
             }
         }
@@ -48,69 +56,69 @@ TEST_CASE ("Test ARP header parsing") {
 
     SECTION ("Check ARP request layer") {
         WHEN ("Header data is parsed") {
-            auto arp = ARP::parse(request);
+            auto arp = new ARP(request);
             THEN ("HW type should match") {
-                REQUIRE(arp->hw_type == 0x0001);
+                REQUIRE(arp->header->hw_type == 0x0001);
             }
             THEN ("Protocol type should match") {
-                REQUIRE(arp->ip_type == 0x0800);
+                REQUIRE(arp->header->ip_type == 0x0800);
             }
             THEN ("HW address length should match") {
-                REQUIRE(arp->hwaddr_len == 0x06);
+                REQUIRE(arp->header->hwaddr_len == 0x06);
             }
             THEN ("Protocol address length should match") {
-                REQUIRE(arp->l3addr_len == 0x04);
+                REQUIRE(arp->header->l3addr_len == 0x04);
             }
             THEN ("Operation code should match") {
-                REQUIRE(arp->opcode == 0x0001);
+                REQUIRE(arp->header->opcode == 0x0001);
             }
             THEN ("Sender MAC address should match") {
-                REQUIRE_THAT(MACAddress::to_string(arp->sender_mac),
+                REQUIRE_THAT(MACAddress::to_string(arp->header->sender_mac),
                              Catch::Matchers::Equals("54:67:51:6f:48:4b", Catch::CaseSensitive::No));
             }
             THEN ("Sender Protocol address should match") {
-                REQUIRE_THAT(IPAddress::to_string(arp->sender_ip), Catch::Matchers::Equals("192.168.0.1"));
+                REQUIRE_THAT(IPAddress::to_string(arp->header->sender_ip), Catch::Matchers::Equals("192.168.0.1"));
             }
             THEN ("Target MAC address should match") {
-                REQUIRE_THAT(MACAddress::to_string(arp->target_mac), Catch::Matchers::Equals("00:00:00:00:00:00"));
+                REQUIRE_THAT(MACAddress::to_string(arp->header->target_mac), Catch::Matchers::Equals("00:00:00:00:00:00"));
             }
             THEN ("Target Protocol address should match") {
-                REQUIRE_THAT(IPAddress::to_string(arp->target_ip), Catch::Matchers::Equals("192.168.0.186"));
+                REQUIRE_THAT(IPAddress::to_string(arp->header->target_ip), Catch::Matchers::Equals("192.168.0.186"));
             }
         }
     }
 
     SECTION ("Check ARP request layer") {
         WHEN ("Header data is parsed") {
-            auto arp = ARP::parse(response);
+            auto arp = new ARP(response);
             THEN ("HW type should match") {
-                REQUIRE(arp->hw_type == 0x0001);
+                REQUIRE(arp->header->hw_type == 0x0001);
             }
             THEN ("Protocol type should match") {
-                REQUIRE(arp->ip_type == 0x0800);
+                REQUIRE(arp->header->ip_type == 0x0800);
             }
             THEN ("HW address length should match") {
-                REQUIRE(arp->hwaddr_len == 0x06);
+                REQUIRE(arp->header->hwaddr_len == 0x06);
             }
             THEN ("Protocol address length should match") {
-                REQUIRE(arp->l3addr_len == 0x04);
+                REQUIRE(arp->header->l3addr_len == 0x04);
             }
             THEN ("Operation code should match") {
-                REQUIRE(arp->opcode == 0x0002);
+                REQUIRE(arp->header->opcode == 0x0002);
             }
             THEN ("Sender MAC address should match") {
-                REQUIRE_THAT(MACAddress::to_string(arp->sender_mac),
+                REQUIRE_THAT(MACAddress::to_string(arp->header->sender_mac),
                              Catch::Matchers::Equals("f8:94:c2:1a:1d:eb", Catch::CaseSensitive::No));
             }
             THEN ("Sender Protocol address should match") {
-                REQUIRE_THAT(IPAddress::to_string(arp->sender_ip), Catch::Matchers::Equals("192.168.0.186"));
+                REQUIRE_THAT(IPAddress::to_string(arp->header->sender_ip), Catch::Matchers::Equals("192.168.0.186"));
             }
             THEN ("Target MAC address should match") {
-                REQUIRE_THAT(MACAddress::to_string(arp->target_mac),
+                REQUIRE_THAT(MACAddress::to_string(arp->header->target_mac),
                              Catch::Matchers::Equals("54:67:51:6f:48:4b", Catch::CaseSensitive::No));
             }
             THEN ("Target Protocol address should match") {
-                REQUIRE_THAT(IPAddress::to_string(arp->target_ip), Catch::Matchers::Equals("192.168.0.1"));
+                REQUIRE_THAT(IPAddress::to_string(arp->header->target_ip), Catch::Matchers::Equals("192.168.0.1"));
             }
         }
     }
@@ -125,43 +133,43 @@ TEST_CASE ("Test IPv4 header parsing") {
 
     SECTION ("Check IPv4 layer") {
         WHEN ("Header data is parsed") {
-            auto ip = IPv4::parse(x);
+            auto ip = new IPv4(x);
             THEN ("Version should match") {
-                REQUIRE(ip->version == 0x04);
+                REQUIRE(ip->header->version == 0x04);
             }
             THEN ("Header length should match") {
-                REQUIRE(ip->ihl == 0x05);
+                REQUIRE(ip->header->ihl == 0x05);
             }
             THEN ("Type of service should match") {
-                REQUIRE(ip->tos == 0x00);
+                REQUIRE(ip->header->tos == 0x00);
             }
             THEN ("Total length should match") {
-                REQUIRE(ip->total_length == 0x015f);
+                REQUIRE(ip->header->total_length == 0x015f);
             }
             THEN ("Identification should match") {
-                REQUIRE(ip->identification == 0x81aa);
+                REQUIRE(ip->header->identification == 0x81aa);
             }
             THEN ("Flags should match") {
-                REQUIRE(ip->flags == 0x02); // last 3 bits
+                REQUIRE(ip->header->flags == 0x02); // last 3 bits
             }
             THEN ("Offset should match") {
-                REQUIRE(ip->offset == 0x0000);
+                REQUIRE(ip->header->offset == 0x0000);
             }
             THEN ("TTL should match") {
-                REQUIRE(ip->ttl == 0x40);
+                REQUIRE(ip->header->ttl == 0x40);
             }
             THEN ("Protocol should match") {
-                REQUIRE(ip->protocol == 0x06);
+                REQUIRE(ip->header->protocol == 0x06);
             }
             THEN ("Checksum should match") {
-                REQUIRE(ip->hdr_checksum == 0x3aab);
+                REQUIRE(ip->header->hdr_checksum == 0x3aab);
             }
             THEN ("Source IP should match") {
-                CAPTURE(ip->src_ip);
-                REQUIRE_THAT(IPAddress::to_string(ip->src_ip), Catch::Matchers::Equals("10.0.0.47"));
+                CAPTURE(ip->header->src_ip);
+                REQUIRE_THAT(IPAddress::to_string(ip->header->src_ip), Catch::Matchers::Equals("10.0.0.47"));
             }
             THEN ("Destination IP should match") {
-                REQUIRE_THAT(IPAddress::to_string(ip->dst_ip), Catch::Matchers::Equals("31.13.84.8"));
+                REQUIRE_THAT(IPAddress::to_string(ip->header->dst_ip), Catch::Matchers::Equals("31.13.84.8"));
             }
         }
     }
@@ -181,15 +189,15 @@ TEST_CASE ("Test ICMP header parsing") {
 
     SECTION ("Check ICMP layer") {
         WHEN ("Header data is parsed") {
-            auto icmp = ICMP::parse(x);
+            auto icmp = new ICMP(x);
             THEN ("Type should match") {
-                REQUIRE(icmp->type == 0x08);
+                REQUIRE(icmp->header->type == 0x08);
             }
             THEN ("Code should match") {
-                REQUIRE(icmp->code == 0x00);
+                REQUIRE(icmp->header->code == 0x00);
             }
             THEN ("Header checksum should match") {
-                REQUIRE(icmp->hdr_checksum == 0xf147);
+                REQUIRE(icmp->header->hdr_checksum == 0xf147);
             }
         }
     }
@@ -207,21 +215,21 @@ TEST_CASE ("Test UDP header parsing") {
 
     SECTION ("Check UDP layer") {
         WHEN ("Header data is parsed") {
-            auto udp = UDP::parse(x);
+            auto udp = new UDP(x);
             THEN ("Source port should match") {
-                REQUIRE(udp->src_port == 0xbd57);
+                REQUIRE(udp->header->src_port == 0xbd57);
             }
             THEN ("Destination port should match") {
-                REQUIRE(udp->dst_port == 0x0035);
+                REQUIRE(udp->header->dst_port == 0x0035);
             }
             THEN ("Datagram length should match") {
-                REQUIRE(udp->length == 0x0029);
+                REQUIRE(udp->header->length == 0x0029);
             }
             THEN ("Header checksum should match") {
-                REQUIRE(udp->checksum == 0x0836);
+                REQUIRE(udp->header->checksum == 0x0836);
             }
 //            THEN ("Data should match") {
-//                REQUIRE_THAT(udp->data, Catch::Matchers::Equals("..."));
+//                REQUIRE_THAT(udp->header->data, Catch::Matchers::Equals("..."));
 //            }
         }
     }
@@ -237,33 +245,33 @@ TEST_CASE ("Test TCP header parsing") {
 
     SECTION ("Check TCP layer") {
         WHEN ("Header data is parsed") {
-            auto tcp = TCP::parse(x);
+            auto tcp = new TCP(x);
             THEN ("Source port should match") {
-                REQUIRE(tcp->src_port == 0xa89e);
+                REQUIRE(tcp->header->src_port == 0xa89e);
             }
             THEN ("Destination port should match") {
-                REQUIRE(tcp->dst_port == 0x01bb);
+                REQUIRE(tcp->header->dst_port == 0x01bb);
             }
             THEN ("Sequence number should match") {
-                REQUIRE(tcp->seq == 0x0e92919e);
+                REQUIRE(tcp->header->seq == 0x0e92919e);
             }
             THEN ("Acknowledgement number should match") {
-                REQUIRE(tcp->ack == 0xa972e771);
+                REQUIRE(tcp->header->ack == 0xa972e771);
             }
             THEN ("Offset should match") {
-                REQUIRE(tcp->offset == 0x08);
+                REQUIRE(tcp->header->offset == 0x08);
             }
             THEN ("Control bits should match") {
-                REQUIRE(tcp->control_bits == 0x10);
+                REQUIRE(tcp->header->control_bits == 0x10);
             }
             THEN ("Window should match") {
-                REQUIRE(tcp->window == 0x0143);
+                REQUIRE(tcp->header->window == 0x0143);
             }
             THEN ("Checksum should match") {
-                REQUIRE(tcp->checksum == 0x52e0);
+                REQUIRE(tcp->header->checksum == 0x52e0);
             }
             THEN ("Urgent pointer should match") {
-                REQUIRE(tcp->urgent_ptr == 0x0000);
+                REQUIRE(tcp->header->urgent_ptr == 0x0000);
             }
         }
     }
@@ -281,30 +289,30 @@ TEST_CASE ("Test IPv6 header parsing") {
 
     SECTION ("Check IPv6 layer") {
         WHEN ("Header data is parsed") {
-            auto ip = IPv6::parse(x);
+            auto ip = new IPv6(x);
             THEN ("Version should match") {
-                REQUIRE(ip->version == 0x06);
+                REQUIRE(ip->header->version == 0x06);
             }
             THEN ("Traffic class should match") {
-                REQUIRE(ip->traffic_class == 0x00);
+                REQUIRE(ip->header->traffic_class == 0x00);
             }
             THEN ("Flow label should match") {
-                REQUIRE(ip->flow_label == 0x0004ebed);
+                REQUIRE(ip->header->flow_label == 0x0004ebed);
             }
             THEN ("Payload length should match") {
-                REQUIRE(ip->payload_len == 0x0095);
+                REQUIRE(ip->header->payload_len == 0x0095);
             }
             THEN ("Next header should match") {
-                REQUIRE(ip->next_hdr == 0x11);
+                REQUIRE(ip->header->next_hdr == 0x11);
             }
             THEN ("Hop limit should match") {
-                REQUIRE(ip->hop_limit == 0xff);
+                REQUIRE(ip->header->hop_limit == 0xff);
             }
             THEN ("Source IP should match") {
-                REQUIRE_THAT(IPv6Address::to_string(ip->src_ip), Catch::Matchers::Equals("fe80:0000:0000:0000:ae8f:2794:6ee1:424a", Catch::CaseSensitive::No));
+                REQUIRE_THAT(IPv6Address::to_string(ip->header->src_ip), Catch::Matchers::Equals("fe80:0000:0000:0000:ae8f:2794:6ee1:424a", Catch::CaseSensitive::No));
             }
             THEN ("Destination IP should match") {
-                REQUIRE_THAT(IPv6Address::to_string(ip->dst_ip), Catch::Matchers::Equals("ff02:0000:0000:0000:0000:0000:0000:00fb", Catch::CaseSensitive::No));
+                REQUIRE_THAT(IPv6Address::to_string(ip->header->dst_ip), Catch::Matchers::Equals("ff02:0000:0000:0000:0000:0000:0000:00fb", Catch::CaseSensitive::No));
             }
         }
     }

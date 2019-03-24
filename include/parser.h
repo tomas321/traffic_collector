@@ -9,8 +9,7 @@
 #include <iostream>
 #include <map>
 
-#include "parsing/layers.h"
-#include "parsing/operations.h"
+#include "parsing/layer.h"
 
 using namespace std;
 
@@ -38,7 +37,7 @@ private:
      * @param packet Address of parsed packet object.
      * @return Json string
      */
-    static string jsonize_packet(uint8_t *raw_packet);
+    static string jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp);
 
     /**
      * Stringify packet layer to string.
@@ -47,7 +46,7 @@ private:
      * @param packet_layer Pakcet layer data.
      * @return Json string.
      */
-    static string parse_protocol(Packet::Type type, uint8_t *data);
+    static string layer_to_json(Layer *packet_layer);
 
 public:
 
@@ -57,7 +56,7 @@ public:
      * @param meta Packet metadata including length and capture timestamp.
      * @param packet Packet bytes.
      */
-    static void process_packet(uint32_t packet_len, uint32_t caplen, const struct timeval &timestamp, uint8_t *packet, int datalink);
+    static void process_packet(uint32_t packet_len, uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, int datalink);
 };
 
 

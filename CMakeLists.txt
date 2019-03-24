@@ -14,6 +14,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/lib)
 
 file(GLOB_RECURSE sources src/*.cpp include/*.h)
+file(GLOB_RECURSE parsing_lib src/process/parsing/*.cpp include/parsing/*.h)
 set(common_libs
         ${Boost_LOG_LIBRARY}
         ${Boost_LOG_SETUP_LIBRARY}
@@ -41,4 +42,4 @@ add_executable(json bin/json.cpp
         src/process/json.cpp)
 
 ## TESTS ##
-add_executable(tests test/test_example.cpp test/test_main.cpp)
+add_executable(tests test/test_example.cpp test/test_main.cpp ${parsing_lib})
