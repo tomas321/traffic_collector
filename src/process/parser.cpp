@@ -15,11 +15,12 @@
 
 string Parser::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
-    char str_time[64], str_timestamp[64];
+    char str_time[64], str_timestamp[64], time_zone[8];
 
     time_struct = localtime(&ts.tv_sec);
     strftime(str_time, sizeof(str_time), "%Y-%m-%dT%H:%M:%S", time_struct);
-    snprintf(str_timestamp, sizeof(str_timestamp), "%s.%06ld", str_time, ts.tv_usec);
+    strftime(time_zone, sizeof(time_zone), "%z", time_struct);
+    snprintf(str_timestamp, sizeof(str_timestamp), "%s.%06ld%s", str_time, ts.tv_usec, time_zone);
 
     return string(str_timestamp);
 }
