@@ -27,7 +27,7 @@ class CaptureError : public std::logic_error {
 private:
     boost::log::trivial::severity_level severity_level;
 public:
-    explicit CaptureError(const string &msg = "Capturing raised an error",
+    explicit CaptureError(const std::string &msg = "Capturing raised an error",
                  boost::log::trivial::severity_level severity_level = boost::log::trivial::severity_level::error)
             : logic_error(msg), severity_level(severity_level) {}
 
@@ -40,7 +40,7 @@ class SocketError : public std::logic_error {
 private:
     boost::log::trivial::severity_level severity_level;
 public:
-    explicit SocketError(const string &msg = "Manipulation with socket raised an error",
+    explicit SocketError(const std::string &msg = "Manipulation with socket raised an error",
                  boost::log::trivial::severity_level severity_level = boost::log::trivial::severity_level::error)
             : logic_error(msg), severity_level(severity_level) {}
 

@@ -48,7 +48,7 @@ public:
      * @param data Json string data of single packet.
      * @return 0 on success.
      */
-    int send(char *data);
+    int send(const char *data);
 };
 
 

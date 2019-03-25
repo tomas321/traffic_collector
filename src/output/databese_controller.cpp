@@ -54,7 +54,7 @@ DatabeseController::~DatabeseController() {
     close(socket_fd);
 }
 
-int DatabeseController::send(char *data) {
+int DatabeseController::send(const char *data) {
     if (write(socket_fd, data, strlen(data)) == -1) {
         throw SocketError("Failed to write data: " + string(strerror(errno)));
     }
