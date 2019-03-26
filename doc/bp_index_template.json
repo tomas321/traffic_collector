@@ -1,0 +1,159 @@
+{
+  "index_patterns": ["bp-*"],
+  "settings": {
+    "number_of_shards": 2
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "time.source": {
+          "type": "date"
+        },
+        "ethernet.source": {
+          "type": "keyword"
+        },
+        "ethernet.destination": {
+          "type": "keyword"
+        },
+        "ethernet.ethertype": {
+          "type": "keyword"
+        },
+        "ip.version": {
+          "type": "integer"
+        },
+        "ip.ihl": {
+          "type": "integer"
+        },
+        "ip.tos": {
+          "type": "integer"
+        },
+        "ip.total_length": {
+          "type": "integer"
+        },
+        "ip.identification": {
+          "type": "integer"
+        },
+        "ip.flags": {
+          "type": "integer"
+        },
+        "ip.offset": {
+          "type": "integer"
+        },
+        "ip.ttl": {
+          "type": "integer"
+        },
+        "ip.protocol": {
+          "type": "keyword"
+        },
+        "ip.checksum": {
+          "type": "integer"
+        },
+        "ip.source": {
+          "type": "ip"
+        },
+        "ip.destination": {
+          "type": "ip"
+        },
+        "icmp.type": {
+          "type": "integer"
+        },
+        "icmp.code": {
+          "type": "integer"
+        },
+        "icmp.checksum": {
+          "type": "integer"
+        },
+        "arp.hardware.type": {
+          "type": "integer"
+        },
+        "arp.hardware.length": {
+          "type": "integer"
+        },
+        "arp.protocol.type": {
+          "type": "integer"
+        },
+        "arp.protocol.length": {
+          "type": "integer"
+        },
+        "arp.opcode": {
+          "type": "integer"
+        },
+        "arp.sender.mac_address": {
+          "type": "keyword"
+        },
+        "arp.sender.protocol_addr": {
+          "type": "ip"
+        },
+        "arp.target.mac_address": {
+          "type": "keyword"
+        },
+        "arp.target.protocol_addr": {
+          "type": "ip"
+        },
+        "ipv6.version": {
+          "type": "integer"
+        },
+        "ipv6.traffic_class": {
+          "type": "integer"
+        },
+        "ipv6.flow_label": {
+          "type": "integer"
+        },
+        "ipv6.payload_length": {
+          "type": "integer"
+        },
+        "ipv6.next_header": {
+          "type": "integer"
+        },
+        "ipv6.ttl": {
+          "type": "integer"
+        },
+        "ipv6.source": {
+          "type": "ip"
+        },
+        "ipv6.destination": {
+          "type": "ip"
+        },
+        "tcp.source_port": {
+          "type": "integer"
+        },
+        "tcp.destination_port": {
+          "type": "integer"
+        },
+        "tcp.seq": {
+          "type": "long"
+        },
+        "tcp.ack": {
+          "type": "long"
+        },
+        "tcp.offset": {
+          "type": "integer"
+        },
+        "tcp.control_bits": {
+          "type": "integer"
+        },
+        "tcp.window": {
+          "type": "integer"
+        },
+        "tcp.checksum": {
+          "type": "integer"
+        },
+        "tcp.urgent_pointer": {
+          "type": "integer"
+        },
+        "udp.source_port": {
+          "type": "integer"
+        },
+        "udp.destination_port": {
+          "type": "integer"
+        },
+        "udp.length": {
+          "type": "integer"
+        },
+        "udp.checksum": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

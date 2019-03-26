@@ -28,6 +28,10 @@ set(common_libs
 add_executable(main bin/main.cpp ${sources})
 target_link_libraries(main ${common_libs})
 
+## CONFIG ##
+add_executable(load_config bin/load_config.cpp ${sources})
+target_link_libraries(load_config ${common_libs})
+
 ## VALIDATE ##
 add_executable(validate bin/validation.cpp ${sources})
 target_link_libraries(validate ${common_libs})
@@ -40,6 +44,11 @@ target_link_libraries(collect_net ${common_libs})
 add_executable(json bin/json.cpp
         include/json.h
         src/process/json.cpp)
+
+## Sender ##
+add_executable(sender bin/sender.cpp
+        include/databese_controller.h
+        src/output/databese_controller.cpp)
 
 ## TESTS ##
 add_executable(test_acpket_parsing test/test_example.cpp test/test_main.cpp ${parsing_lib})
