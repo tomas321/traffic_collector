@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-class DatabeseController {
+class DatabaseController {
 private:
     int socket_fd;
     uint16_t port;
@@ -35,12 +35,12 @@ public:
      * @param port Destination port.
      * @param host Destination host.
      */
-    DatabeseController(uint16_t port, char *host);
+    DatabaseController(uint16_t port, char *host);
 
     /**
      * Destructor closes the socket connection
      */
-    ~DatabeseController();
+    ~DatabaseController();
 
     /**
      * Send data through socket.

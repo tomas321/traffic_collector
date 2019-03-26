@@ -2,6 +2,7 @@
 // Created by tomas on 16/03/19.
 //
 
+#include "databese_controller.h"
 #include "parser.h"
 #include "parsing/packet.h"
 #include "parsing/ipv4.h"
@@ -30,7 +31,10 @@ void Parser::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
 }
 
 void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
+    auto controller = new DatabaseController(12000, "elk.bp.local");
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
+    
+    controller->send(json_packet_str.c_str());
 }
 
 string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {

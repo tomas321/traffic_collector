@@ -12,11 +12,11 @@
 
 using namespace std;
 
-DatabeseController::DatabeseController(uint16_t port, char *host) : port(port), host(resolve_hostname(host)) {
+DatabaseController::DatabaseController(uint16_t port, char *host) : port(port), host(resolve_hostname(host)) {
     initialize();
 }
 
-char *DatabeseController::resolve_hostname(char *host) {
+char *DatabaseController::resolve_hostname(char *host) {
     struct hostent *host_entry;
 
     host_entry = gethostbyname(host);
@@ -26,7 +26,7 @@ char *DatabeseController::resolve_hostname(char *host) {
     return inet_ntoa(*((struct in_addr **) host_entry->h_addr_list)[0]);
 }
 
-int DatabeseController::initialize() {
+int DatabaseController::initialize() {
     struct sockaddr_in host_socket;
 
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -50,11 +50,11 @@ int DatabeseController::initialize() {
     return 0;
 }
 
-DatabeseController::~DatabeseController() {
+DatabaseController::~DatabaseController() {
     close(socket_fd);
 }
 
-int DatabeseController::send(const char *data) {
+int DatabaseController::send(const char *data) {
     if (write(socket_fd, data, strlen(data)) == -1) {
         throw SocketError("Failed to write data: " + string(strerror(errno)));
     }
