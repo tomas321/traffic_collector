@@ -32,7 +32,7 @@ int Collector::set_capture_handle(const string &device) {
     unsigned char *mac;
 
     if (pcap_findalldevs(&alldevs, errbuff) == PCAP_ERROR) {
-        Logging::log(fatal, "Couldn't find any available device to capture on");
+        Logging::log(critical, "Couldn't find any available device to capture on");
         throw CaptureError("No available device");
     }
 

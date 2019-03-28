@@ -5,37 +5,67 @@
 #ifndef TRAFFIC_COLLECTOR_LOGGING_H
 #define TRAFFIC_COLLECTOR_LOGGING_H
 
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
+#include <syslog.h>
+#include <string>
+#include <map>
 
-#define BASE_PATH "/tmp/" //etc/traffic_collector/"
 
-namespace logging = boost::log;
-namespace src = boost::log::sources;
-namespace sinks = boost::log::sinks;
-namespace keywords = boost::log::keywords;
-
-using namespace std;
-using namespace boost::log::trivial;
+/**
+ * Log level enumeration to keep backward compatibility.
+ */
+enum log_level {
+    debug,
+    info,
+    notice,
+    warning,
+    error,
+    critical,
+    alert,
+    emergency
+};
 
 class Logging {
 private:
+    /**
+     * Mapping of previous (boost) log level names with syslog log levels.
+     */
+    static const std::map<log_level, int> log_map;
     static Logging *logger;
-    string base_path;
-    Logging();
+
+    /**
+     * Open syslog session (descriptor) and set minimum log level.
+     * @param lvl Minimum log level.
+     */
+    explicit Logging(int lvl);
 
 public:
-    static void init(logging::trivial::severity_level level);
-    static void log(logging::trivial::severity_level level, const string &msg) {
-        src::severity_logger< logging::trivial::severity_level > severity_logger;
-        BOOST_LOG_SEV(severity_logger, level) << msg;
-    }
+    /**
+     * Closes the log level descriptor.
+     */
+    virtual ~Logging();
+
+public:
+    /**
+     * Initialize the logging descriptor with minimum loging level.
+     * @param severity_level Minimum log level.
+     */
+    static void init(int severity_level);
+
+    /**
+     * Log message of given severity level.
+     *
+     * @param level Message severity level (log_level).
+     * @param msg Log message.
+     */
+    static void log(log_level level, const char *msg);
+
+    /**
+     * Log message of given severity level.
+     *
+     * @param level Message severity level (log_level).
+     * @param msg Log message.
+     */
+    static void log(log_level level, const std::string &msg);
 };
 
 

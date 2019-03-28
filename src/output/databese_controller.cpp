@@ -12,24 +12,24 @@
 
 using namespace std;
 
-DatabaseController::DatabaseController(uint16_t port, char *host) : port(port), host(resolve_hostname(host)) {
+DatabaseController::DatabaseController(uint16_t port, const char *host) : port(port), host(resolve_hostname(host)) {
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     initialize();
 }
 
-char *DatabaseController::resolve_hostname(char *host) {
+char *DatabaseController::resolve_hostname(const char *hostname) {
     struct hostent *host_entry;
 
-    host_entry = gethostbyname(host);
+    host_entry = gethostbyname(hostname);
     if (host_entry == nullptr) {
-        throw SocketError("Cannot resolve provided destination host");
+        throw SocketError("Cannot resolve provided destination hostname");
     }
     return inet_ntoa(*((struct in_addr **) host_entry->h_addr_list)[0]);
 }
 
 int DatabaseController::initialize() {
     struct sockaddr_in host_socket;
-
-    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    
     if (socket_fd == -1) {
         throw SocketError("Failed to open socket: " + string(strerror(errno)));
     }

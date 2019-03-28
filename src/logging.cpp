@@ -4,30 +4,39 @@
 
 #include "logging.h"
 
+using namespace std;
+
 Logging *Logging::logger = nullptr;
 
-void Logging::init(logging::trivial::severity_level level) {
-    if (logger == nullptr) {
-        logger = new Logging();
-        boost::log::core::get()->set_filter(
-                boost::log::trivial::severity >= level
-        );
-    }
+const std::map<log_level, int> Logging::log_map = {
+        {debug, LOG_DEBUG},
+        {info, LOG_INFO},
+        {notice, LOG_NOTICE},
+        {warning, LOG_WARNING},
+        {error, LOG_ERR},
+        {critical, LOG_CRIT},
+        {alert, LOG_ALERT},
+        {emergency, LOG_EMERG}
+};
+
+void Logging::init(int severity_level) {
+    if (logger == nullptr) logger = new Logging(severity_level);
 }
 
-Logging::Logging() {
-    this->base_path = BASE_PATH;
+void Logging::log(log_level level, const char *msg) {
+    syslog(log_map.at(level), "%s", msg);
+    printf("logged: [%d] %s\n", level, msg);
+}
 
-    boost::log::add_file_log(
-            boost::log::keywords::file_name = this->base_path + "sensor_%Y.log",
-            boost::log::keywords::rotation_size = 10 * 1024 * 1024,
-            keywords::open_mode = std::ios_base::app,
-            boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(12, 0, 0),
-            boost::log::keywords::format = "[%TimeStamp%]: [%Severity%]\t%Message%"
-    );
+void Logging::log(log_level level, const std::string& msg) {
+    log(level, msg.c_str());
+}
 
-    boost::log::core::get()->set_filter(
-            boost::log::trivial::severity >= boost::log::trivial::info
-    );
-    boost::log::add_common_attributes();
+Logging::Logging(int level) {
+    openlog("traffic_collector", (LOG_CONS | LOG_NDELAY | LOG_PID), LOG_LOCAL1);
+    setlogmask(LOG_UPTO(level));
+}
+
+Logging::~Logging() {
+    closelog();
 }

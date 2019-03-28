@@ -16,10 +16,10 @@ private:
     /**
      * Resolve host to IP address.
      *
-     * @param host Hostname or IP address.
+     * @param hostname Hostname or IP address.
      * @return IP address string.
      */
-    char *resolve_hostname(char *host);
+    char *resolve_hostname(const char *hostname);
 
     /**
      * Initilaizes the socket fd and connects to given destination socket.
@@ -35,7 +35,7 @@ public:
      * @param port Destination port.
      * @param host Destination host.
      */
-    DatabaseController(uint16_t port, char *host);
+    DatabaseController(uint16_t port, const char *host);
 
     /**
      * Destructor closes the socket connection
