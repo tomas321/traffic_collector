@@ -157,6 +157,8 @@ void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, 
 
     if (datalink == DLT_EN10MB) {
         Parser::process_packet(meta->len, meta->caplen, meta->ts, bytes, datalink);
+    } else {
+        Logging::log(warning, "received other linklayer than Ethernet");
     }
 }
 

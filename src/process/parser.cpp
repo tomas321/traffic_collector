@@ -2,6 +2,7 @@
 // Created by tomas on 16/03/19.
 //
 
+#include "databese_controller.h"
 #include "parser.h"
 #include "parsing/packet.h"
 #include "parsing/ipv4.h"
@@ -12,14 +13,17 @@
 #include "parsing/tcp.h"
 #include "parsing/icmp.h"
 #include "parsing/operations.h"
+#include "logging.h"
+#include "exceptions.h"
 
 string Parser::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
-    char str_time[64], str_timestamp[64];
+    char str_time[64], str_timestamp[64], time_zone[8];
 
     time_struct = localtime(&ts.tv_sec);
     strftime(str_time, sizeof(str_time), "%Y-%m-%dT%H:%M:%S", time_struct);
-    snprintf(str_timestamp, sizeof(str_timestamp), "%s.%06ld", str_time, ts.tv_usec);
+    strftime(time_zone, sizeof(time_zone), "%z", time_struct);
+    snprintf(str_timestamp, sizeof(str_timestamp), "%s.%06ld%s", str_time, ts.tv_usec, time_zone);
 
     return string(str_timestamp);
 }
@@ -29,7 +33,18 @@ void Parser::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
 }
 
 void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
+    DatabaseController *controller;
+    try{
+        controller = new DatabaseController(12000, "elk.bp.local");
+    } catch (const SocketError &e) {
+        Logging::log(error, e.what());
+        return;
+    }
+
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
+//    cout << json_packet_str << endl;
+    controller->send(json_packet_str.c_str());
+    delete controller;
 }
 
 string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {
@@ -37,6 +52,8 @@ string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, st
     // TODO: handle errors.
     Parsed_packet packet(raw_packet);
     Layer **layers = packet.get_layers();
+
+    Logging::log(debug, "Parsed packet and retrieved layers");
 
     // Loop layers using the next pointer of the double linked list.
     for (Layer *current = *layers; current != nullptr; current = current->get_next())
@@ -59,13 +76,15 @@ int Parser::layer_to_json(Json *json, Layer *packet_layer) {
     IPv6 *ipv6;
     ICMP *icmp;
 
+    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
+
     switch (packet_layer->get_layer_type()) {
         case Layers::Ethernet:
             eth = reinterpret_cast<Ethernet *>(packet_layer);
             json->start_object("ethernet");
             json->add<string>("source", MACAddress::to_string(eth->header->src_mac));
             json->add<string>("destination", MACAddress::to_string(eth->header->dst_mac));
-            json->add<string>("ethertype", Layers::layer_string.at(static_cast<Layers::Type>(eth->header->ethertype)));
+            json->add<string>("ethertype", Layers::layer_string(static_cast<Layers::Type>(eth->header->ethertype)));
             json->end_object();
             break;
         case Layers::IPv4:
@@ -79,7 +98,7 @@ int Parser::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("flags", ipv4->header->flags);
             json->add<uint16_t>("offset", ipv4->header->offset);
             json->add<uint8_t>("ttl", ipv4->header->ttl);
-            json->add<string>("protocol", Layers::layer_string.at(static_cast<Layers::Type>(ipv4->header->protocol)));
+            json->add<string>("protocol", Layers::layer_string(static_cast<Layers::Type>(ipv4->header->protocol)));
             json->add<uint16_t>("checksum", ipv4->header->hdr_checksum);
             json->add<string>("source", IPAddress::to_string(ipv4->header->src_ip));
             json->add<string>("destination", IPAddress::to_string(ipv4->header->dst_ip));
