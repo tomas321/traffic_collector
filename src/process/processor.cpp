@@ -10,7 +10,9 @@
 #include "parsing/arp.h"
 #include "parsing/udp.h"
 #include "parsing/tcp.h"
+#include "parsing/rdp.h"
 #include "parsing/icmp.h"
+#include "parsing/icmpv6.h"
 #include "parsing/operations.h"
 #include "logging.h"
 #include "exceptions.h"
@@ -77,6 +79,8 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     ARP *arp;
     IPv6 *ipv6;
     ICMP *icmp;
+    ICMPv6 *icmp6;
+    RDP *rdp;
 
 //    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
@@ -114,6 +118,16 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("type", icmp->header->type);
             json->add<uint8_t>("code", icmp->header->code);
             json->add<uint16_t>("checksum", icmp->header->hdr_checksum);
+            json->end_object();
+            break;
+        case Layers::ICMPv6:
+            // TODO: add type and code mapping to names
+
+            icmp6 = reinterpret_cast<ICMPv6 *>(packet_layer);
+            json->start_object("icmp");
+            json->add<uint8_t>("type", icmp6->header->type);
+            json->add<uint8_t>("code", icmp6->header->code);
+            json->add<uint16_t>("checksum", icmp6->header->hdr_checksum);
             json->end_object();
             break;
         case Layers::ARP:
@@ -173,6 +187,20 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint16_t>("destination_port", udp->header->dst_port);
             json->add<uint16_t>("length", udp->header->length);
             json->add<uint16_t>("checksum", udp->header->checksum);
+            json->end_object();
+            break;
+        case Layers::RDP:
+            rdp = reinterpret_cast<RDP *>(packet_layer);
+            json->start_object("rdp");
+            json->add<uint8_t>("flags", rdp->header->flags);
+            json->add<uint8_t>("version", rdp->header->version);
+            json->add<uint8_t>("header_length", rdp->header->hdr_length);
+            json->add<uint8_t>("source_port", rdp->header->src_port);
+            json->add<uint8_t>("destination_port", rdp->header->dst_port);
+            json->add<uint16_t>("length", rdp->header->length);
+            json->add<uint32_t>("seq", rdp->header->seq);
+            json->add<uint32_t>("ack", rdp->header->ack);
+            json->add<uint32_t>("checksum", rdp->header->checksum);
             json->end_object();
             break;
         default:

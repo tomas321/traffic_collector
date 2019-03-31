@@ -6,6 +6,7 @@
 #include "catch.hpp"
 
 #include "parsing/icmp.h"
+#include "parsing/icmpv6.h"
 #include "parsing/tcp.h"
 #include "parsing/udp.h"
 #include "parsing/arp.h"
@@ -13,7 +14,6 @@
 #include "parsing/ipv6.h"
 #include "parsing/ethernet.h"
 #include "parsing/operations.h"
-#include "parsing/packet.h"
 
 TEST_CASE ("Test Ethernet header parsing") {
     uint8_t x[] = {
@@ -25,7 +25,7 @@ TEST_CASE ("Test Ethernet header parsing") {
         WHEN ("Header data is parsed") {
             auto eth = new Ethernet(x);
             THEN ("Ethertype should match") {
-                REQUIRE_THAT(Layers::layer_string.at(static_cast<Layers::Type >(eth->header->ethertype)),
+                REQUIRE_THAT(Layers::layer_string(static_cast<Layers::Type >(eth->header->ethertype)),
                              Catch::Matchers::Equals("ipv4", Catch::CaseSensitive::No));
             }
             THEN ("Destination MAC should match") {
@@ -190,6 +190,34 @@ TEST_CASE ("Test ICMP header parsing") {
     SECTION ("Check ICMP layer") {
         WHEN ("Header data is parsed") {
             auto icmp = new ICMP(x);
+            THEN ("Type should match") {
+                REQUIRE(icmp->header->type == 0x08);
+            }
+            THEN ("Code should match") {
+                REQUIRE(icmp->header->code == 0x00);
+            }
+            THEN ("Header checksum should match") {
+                REQUIRE(icmp->header->hdr_checksum == 0xf147);
+            }
+        }
+    }
+}
+
+TEST_CASE ("Test ICMPv6 header parsing") {
+    uint8_t x[] = {
+            0x08, 0x00, 0xf1, 0x47, 0x26, 0x13, 0x00, 0x02,
+            0x1b, 0x24, 0x95, 0x5c, 0x00, 0x00, 0x00, 0x00,
+            0x69, 0x4f, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+            0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+            0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+            0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+            0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37
+    };
+
+    SECTION ("Check ICMPv6 layer") {
+        WHEN ("Header data is parsed") {
+            auto icmp = new ICMPv6(x);
             THEN ("Type should match") {
                 REQUIRE(icmp->header->type == 0x08);
             }

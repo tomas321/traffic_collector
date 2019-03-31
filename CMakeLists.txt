@@ -45,6 +45,6 @@ add_executable(sender bin/sender.cpp
         src/output/databese_controller.cpp)
 
 ## TESTS ##
-add_executable(test_acpket_parsing test/test_example.cpp test/test_main.cpp ${parsing_lib})
+add_executable(test_packet_parsing test/test_example.cpp test/test_main.cpp src/logging.cpp include/logging.h ${parsing_lib})
 add_executable(test_json_lib test/test_json_lib.cpp test/test_main.cpp src/process/json.cpp include/json.h)
 add_executable(test_log test/test_logging.cpp test/test_main.cpp src/logging.cpp include/logging.h)
