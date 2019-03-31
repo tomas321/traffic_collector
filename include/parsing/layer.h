@@ -29,6 +29,7 @@ namespace Layers {
         ICMPv6 = 0x3a,
         UDP = 0x11,
         TCP = 0x06,
+        DCCP = 0x21,
         RDP = 0x1b,
         DNS = 0x35
     };
@@ -46,6 +47,7 @@ namespace Layers {
                 {ICMPv6,   "icmpv6"},
                 {UDP,      "udp"},
                 {TCP,      "tcp"},
+                {DCCP,     "dccp"},
                 {RDP,      "rdp"},
                 {DNS,      "dns"},
                 {NONE,     "none"},
@@ -73,6 +75,7 @@ namespace Layers {
                 {ICMPv6,   4}, // temporary
                 {UDP,      8},
                 {TCP,      20},
+                {DCCP,     16}, // 16 or 12
                 {RDP,      9}, // default length but is varying
                 {DNS,      12}
         };

@@ -9,6 +9,7 @@
 #include "parsing/icmpv6.h"
 #include "parsing/tcp.h"
 #include "parsing/udp.h"
+#include "parsing/dccp.h"
 #include "parsing/arp.h"
 #include "parsing/ipv4.h"
 #include "parsing/ipv6.h"
@@ -341,6 +342,83 @@ TEST_CASE ("Test IPv6 header parsing") {
             }
             THEN ("Destination IP should match") {
                 REQUIRE_THAT(IPv6Address::to_string(ip->header->dst_ip), Catch::Matchers::Equals("ff02:0000:0000:0000:0000:0000:0000:00fb", Catch::CaseSensitive::No));
+            }
+        }
+    }
+}
+
+TEST_CASE("Test DCCP header parsing") {
+    uint8_t x[] = {
+            0x80, 0x04, 0x13, 0x89, 0x05, 0x00, 0x08, 0xdb,
+            0x01, 0x00, 0x00, 0x04, 0x29, 0x01, 0x6d, 0xdc
+    };
+
+    uint8_t xx[] = {
+            0x80, 0x04, 0x13, 0x89, 0x05, 0x00, 0x08, 0xdb,
+            0x00, 0x00, 0x00, 0x04
+    };
+
+
+
+    SECTION("Check DCCP layer") {
+        WHEN("Header data is parsed") {
+            auto dccp = new DCCP(x);
+            THEN("Source port should match") {
+                REQUIRE(dccp->header->src_port == 0x8004);
+            }
+            THEN("Destination port should match") {
+                REQUIRE(dccp->header->dst_port == 0x1389);
+            }
+            THEN("Offset should match") {
+                REQUIRE(dccp->header->offset == 0x05);
+            }
+            THEN("CCID value should match") {
+                REQUIRE(dccp->header->ccval == 0x00);
+            }
+            THEN("Checksum coverage should match") {
+                REQUIRE(dccp->header->checksum_cov == 0x00);
+            }
+            THEN("Checksum should match") {
+                REQUIRE(dccp->header->checksum == 0x08db);
+            }
+            THEN("Type should match") {
+                REQUIRE(dccp->header->type == 0x00);
+            }
+            THEN("Extended seq number should match") {
+                REQUIRE(dccp->header->x == 0x01);
+            }
+            THEN("Sequence number should match") {
+                REQUIRE(dccp->header->seq == 17867828700);
+            }
+        }
+        WHEN("Header data is parsed") {
+            auto dccp2 = new DCCP(xx);
+            THEN("Source port should match") {
+                REQUIRE(dccp2->header->src_port == 0x8004);
+            }
+            THEN("Destination port should match") {
+                REQUIRE(dccp2->header->dst_port == 0x1389);
+            }
+            THEN("Offset should match") {
+                REQUIRE(dccp2->header->offset == 0x05);
+            }
+            THEN("CCID value should match") {
+                REQUIRE(dccp2->header->ccval == 0x00);
+            }
+            THEN("Checksum value should match") {
+                REQUIRE(dccp2->header->checksum_cov == 0x00);
+            }
+            THEN("Checksum should match") {
+                REQUIRE(dccp2->header->checksum == 0x08db);
+            }
+            THEN("Type should match") {
+                REQUIRE(dccp2->header->type == 0x00);
+            }
+            THEN("Extended seq number should match") {
+                REQUIRE(dccp2->header->x == 0x00);
+            }
+            THEN("Sequence number should match") {
+                REQUIRE(dccp2->header->seq == 4);
             }
         }
     }
