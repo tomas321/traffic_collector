@@ -2,8 +2,7 @@
 // Created by tomas on 16/03/19.
 //
 
-#include "databese_controller.h"
-#include "parser.h"
+#include "processor.h"
 #include "parsing/packet.h"
 #include "parsing/ipv4.h"
 #include "parsing/ipv6.h"
@@ -16,7 +15,10 @@
 #include "logging.h"
 #include "exceptions.h"
 
-string Parser::timeval_to_string(const struct timeval &ts) {
+
+Processor::Processor(DatabaseController *db_control) : db_control(db_control) {}
+
+string Processor::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
     char str_time[64], str_timestamp[64], time_zone[8];
 
@@ -28,32 +30,32 @@ string Parser::timeval_to_string(const struct timeval &ts) {
     return string(str_timestamp);
 }
 
-void Parser::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
+void Processor::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
     cout << "[" << timestamp << "]" << endl;
 }
 
-void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
-    DatabaseController *controller;
-    try{
-        controller = new DatabaseController(12000, "elk.bp.local");
-    } catch (const SocketError &e) {
-        Logging::log(error, e.what());
-        return;
-    }
+void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
+    int bytes;
 
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
-//    cout << json_packet_str << endl;
-    controller->send(json_packet_str.c_str());
-    delete controller;
+
+//    if (db_control) bytes = db_control->send(json_packet_str.c_str());
+//    else throw SocketError("DB controller is null");
+    auto db_c = new DatabaseController(12000, "elk.bp.local");
+
+    bytes = db_c->send(json_packet_str.c_str());
+    delete db_c;
+
+    Logging::log(debug, "sent " + to_string(bytes) + " bytes to " + db_control->get_host());
 }
 
-string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {
+string Processor::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {
     Json json;
     // TODO: handle errors.
     Parsed_packet packet(raw_packet);
     Layer **layers = packet.get_layers();
 
-    Logging::log(debug, "Parsed packet and retrieved layers");
+//    Logging::log(debug, "Parsed packet and retrieved layers");
 
     // Loop layers using the next pointer of the double linked list.
     for (Layer *current = *layers; current != nullptr; current = current->get_next())
@@ -67,7 +69,7 @@ string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, st
     return json.stringify();
 }
 
-int Parser::layer_to_json(Json *json, Layer *packet_layer) {
+int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     Ethernet *eth;
     IPv4 *ipv4;
     TCP *tcp;
@@ -76,7 +78,7 @@ int Parser::layer_to_json(Json *json, Layer *packet_layer) {
     IPv6 *ipv6;
     ICMP *icmp;
 
-    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
+//    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
     switch (packet_layer->get_layer_type()) {
         case Layers::Ethernet:

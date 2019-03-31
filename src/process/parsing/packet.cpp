@@ -49,7 +49,7 @@ Parsed_packet::Parsed_packet(const uint8_t *bytes) {
 int Parsed_packet::parse_header(Layer **layer, const uint8_t *bytes, Layers::Type *type, int *offset) {
     int increase;
 
-    Logging::log(debug, "parsing packet layer header for " + Layers::layer_string(*type));
+//    Logging::log(debug, "parsing packet layer header for " + Layers::layer_string(*type));
 
     switch (*type) {
         case Layers::Ethernet:

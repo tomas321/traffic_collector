@@ -25,7 +25,7 @@ void Logging::init(int severity_level) {
 
 void Logging::log(log_level level, const char *msg) {
     syslog(log_map.at(level), "%s", msg);
-    printf("logged: [%d] %s\n", level, msg);
+//    printf("logged: [%d] %s\n", level, msg);
 }
 
 void Logging::log(log_level level, const std::string& msg) {

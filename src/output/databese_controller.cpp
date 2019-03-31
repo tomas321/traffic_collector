@@ -12,8 +12,12 @@
 
 using namespace std;
 
-DatabaseController::DatabaseController(uint16_t port, const char *host) : port(port), host(resolve_hostname(host)) {
+DatabaseController::DatabaseController(uint16_t port, const char *host) : port(port) {
+    this->host = resolve_hostname(host);
+
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int flag = 1;
+    setsockopt(socket_fd, SOL_SOCKET, SO_KEEPALIVE, (void *) &flag, sizeof(flag)); // set keep-alive connection
     initialize();
 }
 
@@ -24,7 +28,9 @@ char *DatabaseController::resolve_hostname(const char *hostname) {
     if (host_entry == nullptr) {
         throw SocketError("Cannot resolve provided destination hostname");
     }
-    return inet_ntoa(*((struct in_addr **) host_entry->h_addr_list)[0]);
+    char *resolved_host = inet_ntoa(*((struct in_addr **) host_entry->h_addr_list)[0]);
+    Logging::log(debug, "resolved '" + string(hostname) + "' to '" + string(resolved_host) + "'");
+    return resolved_host;
 }
 
 int DatabaseController::initialize() {
@@ -52,10 +58,18 @@ int DatabaseController::initialize() {
 
 DatabaseController::~DatabaseController() {
     close(socket_fd);
+    Logging::log(warning, "SOCKET closed!");
 }
 
 int DatabaseController::send(const char *data) {
-    if (write(socket_fd, data, strlen(data)) == -1) {
+//    Logging::log(debug, "attempting to send to " + get_host());
+    ssize_t bytes;
+    if ((bytes = write(socket_fd, data, strlen(data))) == -1) {
         throw SocketError("Failed to write data: " + string(strerror(errno)));
     }
+    return int(bytes);
+}
+
+std::string DatabaseController::get_host() {
+    return string(host) + ":" + to_string(port);
 }

@@ -46,9 +46,11 @@ public:
      * Send data through socket.
      *
      * @param data Json string data of single packet.
-     * @return 0 on success.
+     * @return Number of bytes sent.
      */
     int send(const char *data);
+
+    std::string get_host();
 };
 
 
