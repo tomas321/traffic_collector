@@ -48,3 +48,16 @@ public:
         return severity_level;
     };
 };
+
+class ParserError : public std::logic_error {
+private:
+    log_level severity_level;
+public:
+    explicit ParserError(const std::string &msg = "Manipulation with socket raised an error",
+                         log_level severity_level = error)
+            : logic_error(msg), severity_level(severity_level) {}
+
+    log_level get_severity() {
+        return severity_level;
+    };
+};
