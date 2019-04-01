@@ -15,8 +15,6 @@ Collector::Collector(sensor_settings sensor_config, filter_settings filter_confi
     device_ip_addr = "";
     device_mac_addr = "";
     setup_handle();
-
-//    capture_network_packets(10);
 }
 
 void Collector::setup_handle() {
@@ -29,7 +27,7 @@ void Collector::setup_handle() {
 int Collector::set_capture_handle(const string &device) {
     pcap_if_t *alldevs;
     char errbuff[PCAP_ERRBUF_SIZE];
-    unsigned char *mac;
+    raw_device_mac_addr = (uint8_t *) malloc(6);
 
     if (pcap_findalldevs(&alldevs, errbuff) == PCAP_ERROR) {
         Logging::log(critical, "Couldn't find any available device to capture on");
@@ -43,9 +41,10 @@ int Collector::set_capture_handle(const string &device) {
                 switch (address->addr->sa_family) {
                     case PF_PACKET:
                         char mac_addr[18];
-                        mac = ((struct sockaddr_ll *) address->addr)->sll_addr;
-                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2],
-                                 mac[3], mac[4], mac[5]);
+                        strcpy(reinterpret_cast<char *>(raw_device_mac_addr),
+                               reinterpret_cast<const char *>(((struct sockaddr_ll *) address->addr)->sll_addr));
+                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", raw_device_mac_addr[0], raw_device_mac_addr[1], raw_device_mac_addr[2],
+                                 raw_device_mac_addr[3], raw_device_mac_addr[4], raw_device_mac_addr[5]);
                         device_mac_addr = string(mac_addr);
 
                         Logging::log(debug, string(current->name) + ": mac address: " + string(device_mac_addr));
@@ -185,7 +184,7 @@ void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, 
     int datalink = pcap_datalink(this_object->capture_handle);
 
     if (datalink == DLT_EN10MB) {
-        this_object->parser->process_packet(meta->len, meta->caplen, meta->ts, bytes, datalink);
+        this_object->parser->process_packet(meta->len, meta->caplen, meta->ts, bytes, this_object->raw_device_mac_addr);
     } else {
         Logging::log(warning, "received other linklayer than Ethernet");
     }
@@ -199,6 +198,11 @@ const string &Collector::getDevice_mac_addr() const {
     return device_mac_addr;
 }
 
+const uint8_t *Collector::get_raw_device_mac_addr() const {
+    return raw_device_mac_addr;
+}
+
 Collector::~Collector() {
     pcap_close(capture_handle);
+    free(raw_device_mac_addr);
 }

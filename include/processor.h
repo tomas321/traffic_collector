@@ -41,7 +41,8 @@ private:
      * @param packet Address of parsed packet object.
      * @return Json string
      */
-    string jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp);
+    string jsonize_packet(const uint8_t *raw_packet, const uint32_t packet_len, const uint32_t caplen, string timestamp,
+                          const uint8_t *handle_mac_addr);
 
     /**
      * Packet layer to Json object.
@@ -66,7 +67,8 @@ public:
      * @param meta Packet metadata including length and capture timestamp.
      * @param packet Packet bytes.
      */
-    void process_packet(uint32_t packet_len, uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, int datalink);
+    void process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp,
+                        const uint8_t *packet, const uint8_t *handle_mac_addr);
 };
 
 
