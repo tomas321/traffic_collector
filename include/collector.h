@@ -5,9 +5,11 @@
 #ifndef TRAFFIC_COLLECTOR_COLLECTOR_H
 #define TRAFFIC_COLLECTOR_COLLECTOR_H
 
-#include "configuration.h"
 #include <pcap/pcap.h>
 #include <arpa/inet.h>
+
+#include "configuration.h"
+#include "processor.h"
 
 #define GIGABIT_SEC_SIZE 125000000 // data in second on 1Gb/s
 #define SNAPLEN 1500
@@ -27,6 +29,7 @@ private:
     pcap_t *capture_handle;
     string device_ip_addr;
     string device_mac_addr;
+    Processor *parser;
 
     /**
      * Main Collector setup function.
@@ -86,8 +89,9 @@ public:
      *
      * @param sensor_config Sensor configuration structure.
      * @param filter_config Filter configuration structure.
+     * @param parser Parser used for packet parsing
      */
-    Collector(const sensor_settings &sensor_config, const filter_settings &filter_config);
+    Collector(sensor_settings sensor_config, filter_settings filter_config, Processor *parser);
 
     /**
      * Object destructor closing the capture handle.

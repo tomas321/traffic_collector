@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 //
 // Created by tomas on 10/03/19.
 //
@@ -7,11 +11,11 @@
 #include "exceptions.h"
 
 #include <linux/if_packet.h>
-#include <parser.h>
+#include <processor.h>
 
 
-Collector::Collector(const sensor_settings &sensor_config, const filter_settings &filter_config) : sensor_config(
-        sensor_config), filter_config(filter_config) {
+Collector::Collector(sensor_settings sensor_config, filter_settings filter_config, Processor *parser)
+        : sensor_config(std::move(sensor_config)), filter_config(std::move(filter_config)), parser(parser) {
     device_ip_addr = "";
     device_mac_addr = "";
     setup_handle();
@@ -44,7 +48,8 @@ int Collector::set_capture_handle(const string &device) {
                     case PF_PACKET:
                         char mac_addr[18];
                         mac = ((struct sockaddr_ll *) address->addr)->sll_addr;
-                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2],
+                                 mac[3], mac[4], mac[5]);
                         device_mac_addr = string(mac_addr);
 
                         Logging::log(debug, string(current->name) + ": mac address: " + string(device_mac_addr));
@@ -85,7 +90,8 @@ int Collector::set_preferences() {
         Logging::log(warning, "Cannot set specified timestamp type (" + ts_type + ")");
     }
     set_direction = distinguish_capture_direction();
-    Logging::log(debug, "Traffic will capture: " + Configuration::enum_to_str(static_cast<sniff_direction>(set_direction)));
+    Logging::log(debug,
+                 "Traffic will capture: " + Configuration::enum_to_str(static_cast<sniff_direction>(set_direction)));
     return 0;
 }
 
@@ -148,7 +154,8 @@ int Collector::activate_handle() {
 
 int Collector::capture_network_packets(int packet_count) {
     if (capture_handle)
-        pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char*>(this));
+        pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char *>(this));
+    Logging::log(debug, "Finished capturing of " + to_string(packet_count));
 }
 
 void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, const u_char *bytes) {
@@ -156,7 +163,7 @@ void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, 
     int datalink = pcap_datalink(this_object->capture_handle);
 
     if (datalink == DLT_EN10MB) {
-        Parser::process_packet(meta->len, meta->caplen, meta->ts, bytes, datalink);
+        this_object->parser->process_packet(meta->len, meta->caplen, meta->ts, bytes, datalink);
     } else {
         Logging::log(warning, "received other linklayer than Ethernet");
     }

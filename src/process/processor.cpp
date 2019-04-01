@@ -2,8 +2,7 @@
 // Created by tomas on 16/03/19.
 //
 
-#include "databese_controller.h"
-#include "parser.h"
+#include "processor.h"
 #include "parsing/packet.h"
 #include "parsing/ipv4.h"
 #include "parsing/ipv6.h"
@@ -11,12 +10,17 @@
 #include "parsing/arp.h"
 #include "parsing/udp.h"
 #include "parsing/tcp.h"
+#include "parsing/rdp.h"
 #include "parsing/icmp.h"
+#include "parsing/icmpv6.h"
 #include "parsing/operations.h"
 #include "logging.h"
 #include "exceptions.h"
 
-string Parser::timeval_to_string(const struct timeval &ts) {
+
+Processor::Processor(DatabaseController *db_control) : db_control(db_control) {}
+
+string Processor::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
     char str_time[64], str_timestamp[64], time_zone[8];
 
@@ -28,32 +32,28 @@ string Parser::timeval_to_string(const struct timeval &ts) {
     return string(str_timestamp);
 }
 
-void Parser::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
+void Processor::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
     cout << "[" << timestamp << "]" << endl;
 }
 
-void Parser::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
-    DatabaseController *controller;
-    try{
-        controller = new DatabaseController(12000, "elk.bp.local");
-    } catch (const SocketError &e) {
-        Logging::log(error, e.what());
-        return;
-    }
+void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
+    int bytes;
 
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
-//    cout << json_packet_str << endl;
-    controller->send(json_packet_str.c_str());
-    delete controller;
+
+    if (db_control) bytes = db_control->send(json_packet_str.c_str());
+    else throw SocketError("DB controller is null");
+
+    Logging::log(debug, "sent " + to_string(bytes) + " bytes to " + db_control->get_host());
 }
 
-string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {
+string Processor::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {
     Json json;
     // TODO: handle errors.
     Parsed_packet packet(raw_packet);
     Layer **layers = packet.get_layers();
 
-    Logging::log(debug, "Parsed packet and retrieved layers");
+//    Logging::log(debug, "Parsed packet and retrieved layers");
 
     // Loop layers using the next pointer of the double linked list.
     for (Layer *current = *layers; current != nullptr; current = current->get_next())
@@ -64,10 +64,11 @@ string Parser::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, st
     json.add<string>("source", std::move(timestamp));
     json.end_object();
 
-    return json.stringify();
+    return json.stringify() + "\n"; // new-line separates json strings
 }
 
-int Parser::layer_to_json(Json *json, Layer *packet_layer) {
+// TODO: redo as templated function !!!
+int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     Ethernet *eth;
     IPv4 *ipv4;
     TCP *tcp;
@@ -75,8 +76,10 @@ int Parser::layer_to_json(Json *json, Layer *packet_layer) {
     ARP *arp;
     IPv6 *ipv6;
     ICMP *icmp;
+    ICMPv6 *icmp6;
+    RDP *rdp;
 
-    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
+//    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
     switch (packet_layer->get_layer_type()) {
         case Layers::Ethernet:
@@ -112,6 +115,16 @@ int Parser::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("type", icmp->header->type);
             json->add<uint8_t>("code", icmp->header->code);
             json->add<uint16_t>("checksum", icmp->header->hdr_checksum);
+            json->end_object();
+            break;
+        case Layers::ICMPv6:
+            // TODO: add type and code mapping to names
+
+            icmp6 = reinterpret_cast<ICMPv6 *>(packet_layer);
+            json->start_object("icmp");
+            json->add<uint8_t>("type", icmp6->header->type);
+            json->add<uint8_t>("code", icmp6->header->code);
+            json->add<uint16_t>("checksum", icmp6->header->hdr_checksum);
             json->end_object();
             break;
         case Layers::ARP:
@@ -171,6 +184,20 @@ int Parser::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint16_t>("destination_port", udp->header->dst_port);
             json->add<uint16_t>("length", udp->header->length);
             json->add<uint16_t>("checksum", udp->header->checksum);
+            json->end_object();
+            break;
+        case Layers::RDP:
+            rdp = reinterpret_cast<RDP *>(packet_layer);
+            json->start_object("rdp");
+            json->add<uint8_t>("flags", rdp->header->flags);
+            json->add<uint8_t>("version", rdp->header->version);
+            json->add<uint8_t>("header_length", rdp->header->hdr_length);
+            json->add<uint8_t>("source_port", rdp->header->src_port);
+            json->add<uint8_t>("destination_port", rdp->header->dst_port);
+            json->add<uint16_t>("length", rdp->header->length);
+            json->add<uint32_t>("seq", rdp->header->seq);
+            json->add<uint32_t>("ack", rdp->header->ack);
+            json->add<uint32_t>("checksum", rdp->header->checksum);
             json->end_object();
             break;
         default:

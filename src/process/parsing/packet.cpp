@@ -7,9 +7,11 @@
 #include "parsing/icmp.h"
 #include "parsing/tcp.h"
 #include "parsing/udp.h"
+#include "parsing/rdp.h"
 #include "parsing/arp.h"
 #include "parsing/ipv4.h"
 #include "parsing/ipv6.h"
+#include "parsing/icmpv6.h"
 #include "parsing/ethernet.h"
 #include "parsing/operations.h"
 #include "parsing/packet.h"
@@ -49,7 +51,7 @@ Parsed_packet::Parsed_packet(const uint8_t *bytes) {
 int Parsed_packet::parse_header(Layer **layer, const uint8_t *bytes, Layers::Type *type, int *offset) {
     int increase;
 
-    Logging::log(debug, "parsing packet layer header for " + Layers::layer_string(*type));
+//    Logging::log(debug, "parsing packet layer header for " + Layers::layer_string(*type));
 
     switch (*type) {
         case Layers::Ethernet:
@@ -77,6 +79,11 @@ int Parsed_packet::parse_header(Layer **layer, const uint8_t *bytes, Layers::Typ
 //            increase = Layers::header_lengths(*type);
             *type = Layers::NONE;
             return 1;
+        case Layers::ICMPv6:
+            *layer = new ICMPv6((bytes + *offset));
+//            increase = Layers::header_lengths(*type);
+            *type = Layers::NONE;
+            return 1;
         case Layers::UDP:
             *layer = new UDP((bytes + *offset));
 //            increase = Layers::header_lengths(*type);
@@ -87,6 +94,9 @@ int Parsed_packet::parse_header(Layer **layer, const uint8_t *bytes, Layers::Typ
 //            increase = Layers::header_lengths(*type);
             *type = Layers::NONE;
             return 1;
+        case Layers::RDP:
+            *layer = new RDP((bytes + *offset));
+            *type = Layers::NONE;
         default:
             *layer = nullptr;
             return 1;

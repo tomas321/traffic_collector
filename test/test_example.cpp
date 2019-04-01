@@ -6,14 +6,15 @@
 #include "catch.hpp"
 
 #include "parsing/icmp.h"
+#include "parsing/icmpv6.h"
 #include "parsing/tcp.h"
 #include "parsing/udp.h"
+#include "parsing/dccp.h"
 #include "parsing/arp.h"
 #include "parsing/ipv4.h"
 #include "parsing/ipv6.h"
 #include "parsing/ethernet.h"
 #include "parsing/operations.h"
-#include "parsing/packet.h"
 
 TEST_CASE ("Test Ethernet header parsing") {
     uint8_t x[] = {
@@ -25,7 +26,7 @@ TEST_CASE ("Test Ethernet header parsing") {
         WHEN ("Header data is parsed") {
             auto eth = new Ethernet(x);
             THEN ("Ethertype should match") {
-                REQUIRE_THAT(Layers::layer_string.at(static_cast<Layers::Type >(eth->header->ethertype)),
+                REQUIRE_THAT(Layers::layer_string(static_cast<Layers::Type >(eth->header->ethertype)),
                              Catch::Matchers::Equals("ipv4", Catch::CaseSensitive::No));
             }
             THEN ("Destination MAC should match") {
@@ -203,6 +204,34 @@ TEST_CASE ("Test ICMP header parsing") {
     }
 }
 
+TEST_CASE ("Test ICMPv6 header parsing") {
+    uint8_t x[] = {
+            0x08, 0x00, 0xf1, 0x47, 0x26, 0x13, 0x00, 0x02,
+            0x1b, 0x24, 0x95, 0x5c, 0x00, 0x00, 0x00, 0x00,
+            0x69, 0x4f, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+            0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+            0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+            0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+            0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37
+    };
+
+    SECTION ("Check ICMPv6 layer") {
+        WHEN ("Header data is parsed") {
+            auto icmp = new ICMPv6(x);
+            THEN ("Type should match") {
+                REQUIRE(icmp->header->type == 0x08);
+            }
+            THEN ("Code should match") {
+                REQUIRE(icmp->header->code == 0x00);
+            }
+            THEN ("Header checksum should match") {
+                REQUIRE(icmp->header->hdr_checksum == 0xf147);
+            }
+        }
+    }
+}
+
 TEST_CASE ("Test UDP header parsing") {
     uint8_t x[] = {
             0xbd, 0x57, 0x00, 0x35, 0x00, 0x29, 0x08, 0x36,
@@ -313,6 +342,83 @@ TEST_CASE ("Test IPv6 header parsing") {
             }
             THEN ("Destination IP should match") {
                 REQUIRE_THAT(IPv6Address::to_string(ip->header->dst_ip), Catch::Matchers::Equals("ff02:0000:0000:0000:0000:0000:0000:00fb", Catch::CaseSensitive::No));
+            }
+        }
+    }
+}
+
+TEST_CASE("Test DCCP header parsing") {
+    uint8_t x[] = {
+            0x80, 0x04, 0x13, 0x89, 0x05, 0x00, 0x08, 0xdb,
+            0x01, 0x00, 0x00, 0x04, 0x29, 0x01, 0x6d, 0xdc
+    };
+
+    uint8_t xx[] = {
+            0x80, 0x04, 0x13, 0x89, 0x05, 0x00, 0x08, 0xdb,
+            0x00, 0x00, 0x00, 0x04
+    };
+
+
+
+    SECTION("Check DCCP layer") {
+        WHEN("Header data is parsed") {
+            auto dccp = new DCCP(x);
+            THEN("Source port should match") {
+                REQUIRE(dccp->header->src_port == 0x8004);
+            }
+            THEN("Destination port should match") {
+                REQUIRE(dccp->header->dst_port == 0x1389);
+            }
+            THEN("Offset should match") {
+                REQUIRE(dccp->header->offset == 0x05);
+            }
+            THEN("CCID value should match") {
+                REQUIRE(dccp->header->ccval == 0x00);
+            }
+            THEN("Checksum coverage should match") {
+                REQUIRE(dccp->header->checksum_cov == 0x00);
+            }
+            THEN("Checksum should match") {
+                REQUIRE(dccp->header->checksum == 0x08db);
+            }
+            THEN("Type should match") {
+                REQUIRE(dccp->header->type == 0x00);
+            }
+            THEN("Extended seq number should match") {
+                REQUIRE(dccp->header->x == 0x01);
+            }
+            THEN("Sequence number should match") {
+                REQUIRE(dccp->header->seq == 17867828700);
+            }
+        }
+        WHEN("Header data is parsed") {
+            auto dccp2 = new DCCP(xx);
+            THEN("Source port should match") {
+                REQUIRE(dccp2->header->src_port == 0x8004);
+            }
+            THEN("Destination port should match") {
+                REQUIRE(dccp2->header->dst_port == 0x1389);
+            }
+            THEN("Offset should match") {
+                REQUIRE(dccp2->header->offset == 0x05);
+            }
+            THEN("CCID value should match") {
+                REQUIRE(dccp2->header->ccval == 0x00);
+            }
+            THEN("Checksum value should match") {
+                REQUIRE(dccp2->header->checksum_cov == 0x00);
+            }
+            THEN("Checksum should match") {
+                REQUIRE(dccp2->header->checksum == 0x08db);
+            }
+            THEN("Type should match") {
+                REQUIRE(dccp2->header->type == 0x00);
+            }
+            THEN("Extended seq number should match") {
+                REQUIRE(dccp2->header->x == 0x00);
+            }
+            THEN("Sequence number should match") {
+                REQUIRE(dccp2->header->seq == 4);
             }
         }
     }

@@ -26,23 +26,29 @@ namespace Layers {
         IPv4 = 0x0800,
         IPv6 = 0x86dd,
         ICMP = 0x01,
+        ICMPv6 = 0x3a,
         UDP = 0x11,
         TCP = 0x06,
+        DCCP = 0x21,
+        RDP = 0x1b,
         DNS = 0x35
     };
 
     /**
      * Mapping supported types to string representations.
      */
-     inline const string layer_string(Type type) {
+    inline const string layer_string(Type type) {
         const map<Type, const string> lmap = {
                 {Ethernet, "ethernet"},
                 {ARP,      "arp"},
                 {IPv4,     "ipv4"},
                 {IPv6,     "ipv6"},
                 {ICMP,     "icmp"},
+                {ICMPv6,   "icmpv6"},
                 {UDP,      "udp"},
                 {TCP,      "tcp"},
+                {DCCP,     "dccp"},
+                {RDP,      "rdp"},
                 {DNS,      "dns"},
                 {NONE,     "none"},
                 {Unknown,  "unknown"}
@@ -59,15 +65,18 @@ namespace Layers {
     /**
      * Mapping headers to header lengths.
      */
-     inline const int header_lengths(Type type) {
+    inline const int header_lengths(Type type) {
         const map<Type, const int> lmap = {
                 {Ethernet, 14},
                 {ARP,      28},
                 {IPv4,     20},
                 {IPv6,     24},
                 {ICMP,     4}, // temporary
+                {ICMPv6,   4}, // temporary
                 {UDP,      8},
                 {TCP,      20},
+                {DCCP,     16}, // 16 or 12
+                {RDP,      9}, // default length but is varying
                 {DNS,      12}
         };
 
