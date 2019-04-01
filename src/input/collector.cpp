@@ -155,7 +155,7 @@ int Collector::activate_handle() {
 int Collector::capture_network_packets(int packet_count) {
     if (capture_handle)
         pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char *>(this));
-    Logging::log(warning, "Finished capturing of " + to_string(packet_count));
+    Logging::log(debug, "Finished capturing of " + to_string(packet_count));
 }
 
 void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, const u_char *bytes) {

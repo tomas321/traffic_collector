@@ -41,12 +41,8 @@ void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen,
 
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
 
-//    if (db_control) bytes = db_control->send(json_packet_str.c_str());
-//    else throw SocketError("DB controller is null");
-    auto db_c = new DatabaseController(12000, "elk.bp.local");
-
-    bytes = db_c->send(json_packet_str.c_str());
-    delete db_c;
+    if (db_control) bytes = db_control->send(json_packet_str.c_str());
+    else throw SocketError("DB controller is null");
 
     Logging::log(debug, "sent " + to_string(bytes) + " bytes to " + db_control->get_host());
 }
@@ -68,9 +64,10 @@ string Processor::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len,
     json.add<string>("source", std::move(timestamp));
     json.end_object();
 
-    return json.stringify();
+    return json.stringify() + "\n"; // new-line separates json strings
 }
 
+// TODO: redo as templated function !!!
 int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     Ethernet *eth;
     IPv4 *ipv4;
