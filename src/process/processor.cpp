@@ -123,6 +123,7 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("flags", ipv4->header->flags);
             json->add<uint16_t>("offset", ipv4->header->offset);
             json->add<uint8_t>("ttl", ipv4->header->ttl);
+            // TODO: change to getprotobynumber(int proto) from netdb.h
             json->add<string>("protocol", Layers::layer_string(static_cast<Layers::Type>(ipv4->header->protocol)));
             json->add<uint16_t>("checksum", ipv4->header->hdr_checksum);
             json->add<string>("source", IPAddress::to_string(ipv4->header->src_ip));
@@ -178,7 +179,7 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("traffic_class", ipv6->header->traffic_class);
             json->add<uint32_t>("flow_label", ipv6->header->flow_label);
             json->add<uint16_t>("payload_length", ipv6->header->payload_len);
-            // TODO: include string representation
+            // TODO: change to getprotobynumber(int proto) from netdb.h
             json->add<uint8_t>("next_header", ipv6->header->next_hdr);
             json->add<uint8_t>("ttl", ipv6->header->hop_limit); // or hop_limit
             json->add<string>("source", IPv6Address::to_string(ipv6->header->src_ip));
