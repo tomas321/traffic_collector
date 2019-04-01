@@ -153,6 +153,60 @@
         "udp.checksum": {
           "type": "integer"
         },
+        "rdp.flags": {
+          "type": "integer"
+        },
+        "rdp.version": {
+          "type": "integer"
+        },
+        "rdp.header_length": {
+          "type": "integer"
+        },
+        "rdp.source_port": {
+          "type": "integer"
+        },
+        "rdp.destination_port": {
+          "type": "integer"
+        },
+        "rdp.length": {
+          "type": "integer"
+        },
+        "rdp.seq": {
+          "type": "long"
+        },
+        "rdp.ack": {
+          "type": "long"
+        },
+        "rdp.checksum": {
+          "type": "long"
+        },
+        "dccp.source_port": {
+          "type": "integer"
+        },
+        "dccp.destination_port": {
+          "type": "integer"
+        },
+        "dccp.offset": {
+          "type": "integer"
+        },
+        "dccp.ccval": {
+          "type": "integer"
+        },
+        "dccp.checksum_coverage": {
+          "type": "integer"
+        },
+        "dccp.checksum": {
+          "type": "integer"
+        },
+        "dccp.type": {
+          "type": "integer"
+        },
+        "dccp.extended_seq": {
+          "type": "boolean"
+        },
+        "dccp.seq": {
+          "type": "long"
+        },
         "pcap.length.capture": {
           "type": "integer"
         },

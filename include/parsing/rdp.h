@@ -10,7 +10,6 @@
 
 class RDP : public Layer {
 public:
-    // TODO: add fields to Elastic template
     struct RDP_header {
         uint8_t flags; // 6 bits
         uint8_t version; // 2 bits
