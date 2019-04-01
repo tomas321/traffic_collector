@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 //
 // Created by tomas on 10/03/19.
 //
@@ -77,6 +73,7 @@ int Collector::set_capture_handle(const string &device) {
 
 int Collector::set_preferences() {
     int set_direction;
+    int ts_type = PCAP_TSTAMP_ADAPTER;
     Logging::log(info, "Setting preferences for capture handle");
 
     if (pcap_set_snaplen(capture_handle, SNAPLEN) != 0)
@@ -85,14 +82,39 @@ int Collector::set_preferences() {
         Logging::log(warning, "Cannot set immediate mode");
     if (pcap_set_buffer_size(capture_handle, GIGABIT_SEC_SIZE) != 0)
         Logging::log(warning, "Cannot set specified buffer size (" + to_string(GIGABIT_SEC_SIZE) + ")");
-    if (pcap_set_tstamp_type(capture_handle, PCAP_TSTAMP_ADAPTER) != 0) {
-        string ts_type(pcap_tstamp_type_val_to_name(PCAP_TSTAMP_ADAPTER));
-        Logging::log(warning, "Cannot set specified timestamp type (" + ts_type + ")");
+    if (choose_capture_timestamping(&ts_type) != 0) {
+        Logging::log(warning, "Cannot set specified timestamp type (" + string(pcap_tstamp_type_val_to_name(ts_type)) + ")");
     }
     set_direction = distinguish_capture_direction();
     Logging::log(debug,
                  "Traffic will capture: " + Configuration::enum_to_str(static_cast<sniff_direction>(set_direction)));
     return 0;
+}
+
+int Collector::choose_capture_timestamping(int *ts_type) {
+    int *types;
+    int count = 0;
+
+    if (!capture_handle) {
+        throw CaptureError("Must create pcap handle first");
+    }
+
+    if (pcap_set_tstamp_type(capture_handle, *ts_type) == 0) {
+        Logging::log(debug, "Pcap capture timestamp set to desired type (" + string(pcap_tstamp_type_val_to_name(*ts_type)) + ")");
+        return 0;
+    }
+    count = pcap_list_tstamp_types(capture_handle, &types);
+    if (count == PCAP_ERROR || count == 0) {
+        Logging::log(warning, "Cannot retrieve timestamp types");
+        pcap_free_tstamp_types(types);
+        return 1;
+    } else {
+        pcap_set_tstamp_type(capture_handle, types[0]);
+        *ts_type = types[0];
+        Logging::log(debug, "Pcap capture timestamp set to (" + string(pcap_tstamp_type_val_to_name(*ts_type)) + ")");
+        pcap_free_tstamp_types(types);
+        return 0;
+    }
 }
 
 int Collector::distinguish_capture_direction() {

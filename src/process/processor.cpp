@@ -42,7 +42,7 @@ void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen,
     string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
 
     if (db_control) bytes = db_control->send(json_packet_str.c_str());
-    else throw SocketError("DB controller is null");
+    else throw SocketError("DB controller is null", critical);
 
     Logging::log(debug, "sent " + to_string(bytes) + " bytes to " + db_control->get_host());
 }
