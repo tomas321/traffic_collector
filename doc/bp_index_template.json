@@ -152,6 +152,15 @@
         },
         "udp.checksum": {
           "type": "integer"
+        },
+        "pcap.length.capture": {
+          "type": "integer"
+        },
+        "pcap.length.snapshot": {
+          "type": "integer"
+        },
+        "pcap.direction": {
+          "type": "keyword"
         }
       }
     }
