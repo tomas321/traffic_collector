@@ -85,7 +85,7 @@ int Collector::set_preferences() {
         Logging::log(warning, "Cannot set specified timestamp type (" + string(pcap_tstamp_type_val_to_name(ts_type)) + ")");
     }
     set_direction = distinguish_capture_direction();
-    Logging::log(debug,
+    Logging::log(info,
                  "Traffic will capture: " + Configuration::enum_to_str(static_cast<sniff_direction>(set_direction)));
     return 0;
 }
@@ -140,11 +140,11 @@ sniff_direction Collector::set_capture_direction(pcap_direction_t pcap_dir, snif
     struct bpf_program filter_program;
     string filter;
 
-    if (pcap_setdirection(capture_handle, pcap_dir) != PCAP_ERROR) {
-        return sensor_dir;
-    }
-
-    Logging::log(warning, string(pcap_geterr(capture_handle)));
+//    if (pcap_setdirection(capture_handle, pcap_dir) != PCAP_ERROR) {
+//        return sensor_dir;
+//    }
+//
+//    Logging::log(warning, string(pcap_geterr(capture_handle)));
 
     filter = (device_ip_addr.empty()) ? FILTER_MAC(device_mac_addr, sensor_dir) : FILTER_IP(device_ip_addr, sensor_dir);
     pcap_lookupnet(sensor_config.interface.c_str(), &addr, &mask, errbuff);
