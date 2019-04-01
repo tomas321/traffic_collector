@@ -25,6 +25,7 @@ private:
     pcap_t *capture_handle;
     string device_ip_addr;
     string device_mac_addr;
+    uint8_t *raw_device_mac_addr;
     Processor *parser;
 
     /**
@@ -123,6 +124,13 @@ public:
      * @return MAC address string.
      */
     const string &getDevice_mac_addr() const;
+
+    /**
+     * Get MAC address of capture device.
+     *
+     * @return Raw MAC address octets.
+     */
+    const uint8_t *get_raw_device_mac_addr() const;
 };
 
 

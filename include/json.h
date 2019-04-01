@@ -37,6 +37,7 @@ private:
      * @return 0 on success.
      */
     int add_specific(const string &key, int value);
+    int add_specific(const string &key, uint64_t value);
     int add_specific(const string &key, uint32_t value);
     int add_specific(const string &key, uint16_t value);
     int add_specific(const string &key, uint8_t value);

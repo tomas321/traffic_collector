@@ -13,6 +13,10 @@ int Json::add_specific(const string &key, int value) {
     return (json_writer->Key(key.c_str()) && json_writer->Int(value));
 }
 
+int Json::add_specific(const string &key, uint64_t value) {
+    return (json_writer->Key(key.c_str()) && json_writer->Uint64(value));
+}
+
 int Json::add_specific(const string &key, uint32_t value) {
     return (json_writer->Key(key.c_str()) && json_writer->Uint(value));
 }

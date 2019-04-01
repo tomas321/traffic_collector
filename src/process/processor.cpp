@@ -11,6 +11,7 @@
 #include "parsing/udp.h"
 #include "parsing/tcp.h"
 #include "parsing/rdp.h"
+#include "parsing/dccp.h"
 #include "parsing/icmp.h"
 #include "parsing/icmpv6.h"
 #include "parsing/operations.h"
@@ -36,10 +37,12 @@ void Processor::print_packet_layers(const string &timestamp, uint8_t *raw_packet
     cout << "[" << timestamp << "]" << endl;
 }
 
-void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp, const uint8_t *packet, const int datalink) {
+void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp,
+                               const uint8_t *packet, const uint8_t *handle_mac_addr) {
     int bytes;
 
-    string json_packet_str = jsonize_packet(packet, packet_len, timeval_to_string(timestamp));
+    string json_packet_str = jsonize_packet(packet, packet_len, caplen, timeval_to_string(timestamp),
+                                            handle_mac_addr);
 
     if (db_control) bytes = db_control->send(json_packet_str.c_str());
     else throw SocketError("DB controller is null", critical);
@@ -47,21 +50,39 @@ void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen,
     Logging::log(debug, "sent " + to_string(bytes) + " bytes to " + db_control->get_host());
 }
 
-string Processor::jsonize_packet(const uint8_t *raw_packet, uint32_t packet_len, string timestamp) {
+string Processor::jsonize_packet(const uint8_t *raw_packet, const uint32_t packet_len, const uint32_t caplen,
+                                 string timestamp,
+                                 const uint8_t *handle_mac_addr) {
     Json json;
     // TODO: handle errors.
     Parsed_packet packet(raw_packet);
     Layer **layers = packet.get_layers();
-
-//    Logging::log(debug, "Parsed packet and retrieved layers");
+    uint8_t *src_mac = nullptr, *dst_mac = nullptr;
 
     // Loop layers using the next pointer of the double linked list.
-    for (Layer *current = *layers; current != nullptr; current = current->get_next())
+    for (Layer *current = *layers; current != nullptr; current = current->get_next()) {
+        if (current->get_layer_type() == Layers::Ethernet) {
+            src_mac = reinterpret_cast<Ethernet *>(current)->header->src_mac;
+            dst_mac = reinterpret_cast<Ethernet *>(current)->header->dst_mac;
+        }
         layer_to_json(&json, current);
+    }
 
-    // Add timestamp as a final time.source key.
+    // Add timestamp as a time.source key and pcap capture meta data
     json.start_object("time");
     json.add<string>("source", std::move(timestamp));
+    json.end_object();
+    json.start_object("pcap");
+    json.start_object("length");
+    json.add<uint32_t>("capture", packet_len);
+    json.add<uint32_t>("snapshot", caplen);
+    json.end_object();
+    if (src_mac && dst_mac) {
+        if (string(MACAddress::to_string(src_mac)) == string(MACAddress::to_string(handle_mac_addr)))
+            json.add<string>("direction", "tx");
+        else if (string(MACAddress::to_string(dst_mac)) == string(MACAddress::to_string(handle_mac_addr)))
+            json.add<string>("direction", "rx");
+    }
     json.end_object();
 
     return json.stringify() + "\n"; // new-line separates json strings
@@ -78,6 +99,7 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     ICMP *icmp;
     ICMPv6 *icmp6;
     RDP *rdp;
+    DCCP *dccp;
 
 //    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
@@ -119,7 +141,7 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             break;
         case Layers::ICMPv6:
             // TODO: add type and code mapping to names
-
+            // ICMPv6 is mapped to the same ES field mappings (imcp)
             icmp6 = reinterpret_cast<ICMPv6 *>(packet_layer);
             json->start_object("icmp");
             json->add<uint8_t>("type", icmp6->header->type);
@@ -198,6 +220,20 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint32_t>("seq", rdp->header->seq);
             json->add<uint32_t>("ack", rdp->header->ack);
             json->add<uint32_t>("checksum", rdp->header->checksum);
+            json->end_object();
+            break;
+        case Layers::DCCP:
+            dccp = reinterpret_cast<DCCP *>(packet_layer);
+            json->start_object("dccp");
+            json->add<uint16_t>("source_port", dccp->header->src_port);
+            json->add<uint16_t>("destination_port", dccp->header->dst_port);
+            json->add<uint8_t>("offset", dccp->header->offset);
+            json->add<uint8_t>("ccval", dccp->header->ccval);
+            json->add<uint8_t>("checksum_coverage", dccp->header->checksum_cov);
+            json->add<uint16_t>("checksum", dccp->header->checksum);
+            json->add<uint8_t>("type", dccp->header->type);
+            json->add<bool>("extended_seq", bool(dccp->header->x));
+            json->add<uint64_t>("seq", dccp->header->seq);
             json->end_object();
             break;
         default:
