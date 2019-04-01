@@ -10,6 +10,7 @@
 
 class ICMPv6 : public Layer {
 public:
+    // TODO: add fields to Elastic template
     struct ICMPv6_header {
         uint8_t type;
         uint8_t code;

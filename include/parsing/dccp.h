@@ -10,6 +10,7 @@
 
 class DCCP : public Layer {
 public:
+    // TODO: add fields to Elastic template
     struct DCCP_header {
         uint16_t src_port;
         uint16_t dst_port;
