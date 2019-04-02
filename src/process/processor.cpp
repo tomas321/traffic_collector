@@ -19,7 +19,8 @@
 #include "exceptions.h"
 
 
-Processor::Processor(DatabaseController *db_control) : db_control(db_control) {}
+Processor::Processor(DatabaseController *db_control, Harmonization *harmonization) : db_control(db_control),
+                                                                                     harmonozation(harmonization) {}
 
 string Processor::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
