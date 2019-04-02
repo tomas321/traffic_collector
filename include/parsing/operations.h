@@ -24,6 +24,33 @@ namespace IPAddress {
                  (bytes & 0x000000ff));
         return ip;
     }
+
+    inline bool is_public(uint32_t ip) {
+        uint32_t masks[] = {
+                0xf0000000, // 240.0.0.0
+                0xff000000, // 255.0.0.0
+                0xfff00000, // 255.240.0.0
+                0xffff0000, // 255.255.0.0
+                0xff000000, // 255.0.0.0
+                0xffff0000, // 255.255.0.0
+        };
+        uint32_t nets[] = {
+                0xe0000000, // 224.0.0.0
+                0x0a000000, // 10.0.0.0
+                0xac100000, // 172.16.0.0
+                0xc0a80000, // 192.168.0.0
+                0x7f000000, // 127.0.0.0
+                0xa9fe0000, // 169.254.0.0
+        };
+        int size = sizeof(masks) / sizeof(uint32_t);
+
+        for (int i = 0; i < size; ++i) {
+            if ((ip & masks[i]) == nets[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 namespace IPv6Address {

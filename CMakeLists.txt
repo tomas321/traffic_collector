@@ -56,6 +56,7 @@ target_link_libraries(geoip ${libgeoip})
 add_executable(test_packet_parsing test/test_example.cpp test/test_main.cpp src/logging.cpp include/logging.h ${parsing_lib})
 add_executable(test_json_lib test/test_json_lib.cpp test/test_main.cpp src/process/json.cpp include/json.h)
 add_executable(test_log test/test_logging.cpp test/test_main.cpp src/logging.cpp include/logging.h)
-add_executable(test_geoip test/geoip_test.cpp include/harmonization.h src/process/harmonization.cpp)
+add_executable(test_geoip test/geoip_test.cpp test/test_main.cpp include/harmonization.h src/process/harmonization.cpp)
 target_link_libraries(test_geoip ${libgeoip})
+add_executable(test_operations test/test_operations.cpp test/test_main.cpp include/parsing/operations.h)
 
