@@ -1,2 +1,4 @@
-libboost-log-dev
 libyaml-cpp-dev
+libpcap-dev
+rapidjson
+libgeoip1 libgeoip-dev geoip-bin (add-apt-repository ppa:maxmind/ppa)
