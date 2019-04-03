@@ -102,6 +102,8 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     RDP *rdp;
     DCCP *dccp;
 
+    string geoip_src, geoip_dst;
+
 //    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
     switch (packet_layer->get_layer_type()) {
@@ -130,6 +132,32 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<string>("source", IPAddress::to_string(ipv4->header->src_ip));
             json->add<string>("destination", IPAddress::to_string(ipv4->header->dst_ip));
             json->end_object();
+
+            try {
+                if (IPAddress::is_public(ipv4->header->src_ip))
+                    geoip_src = harmonozation->geoip(IPAddress::to_string(ipv4->header->src_ip));
+            } catch (const std::logic_error &e) {
+                Logging::log(warning,
+                             "no geoip data for ip: " + string(IPAddress::to_string(ipv4->header->src_ip)));
+            }
+            try {
+                if (IPAddress::is_public(ipv4->header->dst_ip))
+                    geoip_dst = harmonozation->geoip(IPAddress::to_string(ipv4->header->dst_ip));
+            } catch (const std::logic_error &e) {
+                Logging::log(warning,
+                             "no geoip data for ip: " + string(IPAddress::to_string(ipv4->header->dst_ip)));
+            }
+
+            if ((IPAddress::is_public(ipv4->header->src_ip) && !geoip_src.empty()) ||
+                (IPAddress::is_public(ipv4->header->dst_ip) && !geoip_dst.empty())) {
+                json->start_object("geoip");
+                if (IPAddress::is_public(ipv4->header->src_ip) && !geoip_src.empty())
+                    json->add<string>("source", geoip_src);
+                if (IPAddress::is_public(ipv4->header->dst_ip) && !geoip_dst.empty())
+                    json->add<string>("destination", geoip_dst);
+                json->end_object();
+            }
+
             break;
         case Layers::ICMP:
             // TODO: add type and code mapping to names

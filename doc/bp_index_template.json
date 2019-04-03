@@ -215,6 +215,12 @@
         },
         "pcap.direction": {
           "type": "keyword"
+        },
+        "geoip.source": {
+          "type": "keyword"
+        },
+        "geoip.destination": {
+          "type": "keyword"
         }
       }
     }
