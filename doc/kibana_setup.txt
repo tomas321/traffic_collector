@@ -1,0 +1,12 @@
+PREPARATIONS:
+  
+- create visualization working on expected index pattern (bp-*)
+  - export all objects to a json file
+- reinstall kibana and send new data to new indices
+
+DEPLOY KIBANA UI
+- put ES index template
+- create indices based on inserted template (for kibana index patterns)
+- import all objects (json file from export)
+  - CHECK IF IT WORKS AND WHAT NEEDS TO BE CHANGED IN THE JSON
+    - PROBABLY MODIFIED BY A SIMPLE PYTHON SCRIPT

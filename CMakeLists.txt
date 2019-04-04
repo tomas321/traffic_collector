@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.0)
 project(traffic_collector)
 
 set(CMAKE_CXX_STANDARD 17)
-
-add_definitions(-DBOOST_LOG_DYN_LINK)
 
 find_package(Threads REQUIRED)
 find_package(yaml-cpp 0.5 REQUIRED)
@@ -44,7 +42,8 @@ add_executable(json bin/json.cpp
 ## Sender ##
 add_executable(sender bin/sender.cpp
         include/databese_controller.h
-        src/output/databese_controller.cpp)
+        src/output/databese_controller.cpp
+        src/logging.cpp)
 
 ## GEOIP ##
 add_executable(geoip bin/geoip.cpp

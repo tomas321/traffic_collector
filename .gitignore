@@ -58,6 +58,8 @@ fabric.properties
 # Ignore the build and lib dirs
 build
 lib/*
+!lib/rapidjson
 
 # Ignore any executables
 bin/*
+!bin/collect.cpp

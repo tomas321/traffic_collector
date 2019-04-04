@@ -1,4 +1,16 @@
-libyaml-cpp-dev
-libpcap-dev
-rapidjson
-libgeoip1 libgeoip-dev geoip-bin (add-apt-repository ppa:maxmind/ppa)
+https://github.com/jbeder/yaml-cpp (from source)
+    mkdir build
+    cd build
+    cmake ..
+    make
+    make install
+
+libpcap (package)
+
+rapidjson (from lib - header only)
+
+https://github.com/maxmind/geoip-api-c (from source)
+    ./configure
+    gmake
+    gmake check
+    gmake install
