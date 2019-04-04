@@ -19,7 +19,8 @@
 #include "exceptions.h"
 
 
-Processor::Processor(DatabaseController *db_control) : db_control(db_control) {}
+Processor::Processor(DatabaseController *db_control, Harmonization *harmonization) : db_control(db_control),
+                                                                                     harmonozation(harmonization) {}
 
 string Processor::timeval_to_string(const struct timeval &ts) {
     struct tm *time_struct;
@@ -101,6 +102,8 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     RDP *rdp;
     DCCP *dccp;
 
+    string geoip_src, geoip_dst;
+
 //    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
     switch (packet_layer->get_layer_type()) {
@@ -123,11 +126,38 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("flags", ipv4->header->flags);
             json->add<uint16_t>("offset", ipv4->header->offset);
             json->add<uint8_t>("ttl", ipv4->header->ttl);
+            // TODO: change to getprotobynumber(int proto) from netdb.h
             json->add<string>("protocol", Layers::layer_string(static_cast<Layers::Type>(ipv4->header->protocol)));
             json->add<uint16_t>("checksum", ipv4->header->hdr_checksum);
             json->add<string>("source", IPAddress::to_string(ipv4->header->src_ip));
             json->add<string>("destination", IPAddress::to_string(ipv4->header->dst_ip));
             json->end_object();
+
+            try {
+                if (IPAddress::is_public(ipv4->header->src_ip))
+                    geoip_src = harmonozation->geoip(IPAddress::to_string(ipv4->header->src_ip));
+            } catch (const std::logic_error &e) {
+                Logging::log(warning,
+                             "no geoip data for ip: " + string(IPAddress::to_string(ipv4->header->src_ip)));
+            }
+            try {
+                if (IPAddress::is_public(ipv4->header->dst_ip))
+                    geoip_dst = harmonozation->geoip(IPAddress::to_string(ipv4->header->dst_ip));
+            } catch (const std::logic_error &e) {
+                Logging::log(warning,
+                             "no geoip data for ip: " + string(IPAddress::to_string(ipv4->header->dst_ip)));
+            }
+
+            if ((IPAddress::is_public(ipv4->header->src_ip) && !geoip_src.empty()) ||
+                (IPAddress::is_public(ipv4->header->dst_ip) && !geoip_dst.empty())) {
+                json->start_object("geoip");
+                if (IPAddress::is_public(ipv4->header->src_ip) && !geoip_src.empty())
+                    json->add<string>("source", geoip_src);
+                if (IPAddress::is_public(ipv4->header->dst_ip) && !geoip_dst.empty())
+                    json->add<string>("destination", geoip_dst);
+                json->end_object();
+            }
+
             break;
         case Layers::ICMP:
             // TODO: add type and code mapping to names
@@ -178,7 +208,7 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("traffic_class", ipv6->header->traffic_class);
             json->add<uint32_t>("flow_label", ipv6->header->flow_label);
             json->add<uint16_t>("payload_length", ipv6->header->payload_len);
-            // TODO: include string representation
+            // TODO: change to getprotobynumber(int proto) from netdb.h
             json->add<uint8_t>("next_header", ipv6->header->next_hdr);
             json->add<uint8_t>("ttl", ipv6->header->hop_limit); // or hop_limit
             json->add<string>("source", IPv6Address::to_string(ipv6->header->src_ip));

@@ -12,12 +12,14 @@
 #include "parsing/layer.h"
 #include "databese_controller.h"
 #include "json.h"
+#include "harmonization.h"
 
 using namespace std;
 
 class Processor {
 private:
     DatabaseController *db_control;
+    Harmonization *harmonozation;
 
     /**
      * Convert packet timestamp to formatted string.
@@ -58,14 +60,18 @@ public:
      * Initialize Processor with active DB connector (TCP stream).
      *
      * @param db_control Database controller.
+     * @param harmonization Data harmonization object.
      */
-    explicit Processor(DatabaseController *db_control);
+    explicit Processor(DatabaseController *db_control, Harmonization *harmonization);
 
     /**
      * Packet processing.
      *
-     * @param meta Packet metadata including length and capture timestamp.
+     * @param packet_len Total packet length (part of pcap metadata).
+     * @param caplen Snapshot length (part of pcap metadata).
+     * @param timestamp Time the packet was capture (part of pcap metadata).
      * @param packet Packet bytes.
+     * @param handle_mac_addr MAC address of capture device.
      */
     void process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp,
                         const uint8_t *packet, const uint8_t *handle_mac_addr);
