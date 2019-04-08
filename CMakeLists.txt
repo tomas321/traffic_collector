@@ -8,6 +8,7 @@ find_package(yaml-cpp 0.5 REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/include
         ${YAML_CPP_INCLUDE_DIR}
         ${PROJECT_SOURCE_DIR}/lib)
+link_directories(/usr/local/lib)
 
 file(GLOB_RECURSE sources src/*.cpp include/*.h)
 file(GLOB_RECURSE parsing_lib src/process/parsing/*.cpp include/parsing/*.h)

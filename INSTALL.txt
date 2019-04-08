@@ -89,6 +89,7 @@ are required:
   - make
   - gcc
   - gmake -> for building geoip library
+  - netlib -> gethostbyname
 
 Installation process:
   1. Locate to the repository root directory.

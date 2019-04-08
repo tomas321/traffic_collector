@@ -10,7 +10,7 @@
 #include "logging.h"
 
 int main(int argc, char **argv) {
-    Logging::init(LOG_DEBUG);
+    Logging::init(LOG_INFO);
 
     sensor_settings sensor_config{"eno1", sniff_direction::promisc};
     filter_settings filter_config{"", ""};

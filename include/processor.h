@@ -5,7 +5,6 @@
 #ifndef TRAFFIC_COLLECTOR_PROCESSOR_H
 #define TRAFFIC_COLLECTOR_PROCESSOR_H
 
-#include <stdint-gcc.h>
 #include <iostream>
 #include <map>
 

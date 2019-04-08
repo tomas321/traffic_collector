@@ -6,7 +6,6 @@
 #define TRAFFIC_COLLECTOR_CONFIGURATION_H
 
 
-#include <stdint-gcc.h>
 #include <string>
 #include <yaml-cpp/yaml.h>
 
@@ -19,7 +18,6 @@
 #define DEFAULT_ARCHIVE_LIMIT 50000 // in MB
 
 using namespace std;
-using namespace boost;
 
 
 enum sniff_direction {

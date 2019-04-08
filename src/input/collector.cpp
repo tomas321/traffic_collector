@@ -5,10 +5,15 @@
 #include "collector.h"
 #include "logging.h"
 #include "exceptions.h"
+#include "processor.h"
 
-#include <linux/if_packet.h>
-#include <processor.h>
+#include <netinet/in.h>
 
+#ifdef __linux
+#define LINK_PF PF_PACKET
+#elif __unix
+#define LINK_PF AF_LINK
+#endif
 
 Collector::Collector(sensor_settings sensor_config, filter_settings filter_config, Processor *parser)
         : sensor_config(std::move(sensor_config)), filter_config(std::move(filter_config)), parser(parser) {
@@ -39,10 +44,10 @@ int Collector::set_capture_handle(const string &device) {
             Logging::log(debug, "Found " + device);
             for (pcap_addr_t *address = current->addresses; address != NULL; address = address->next) {
                 switch (address->addr->sa_family) {
-                    case PF_PACKET:
+                    case LINK_PF:
                         char mac_addr[18];
                         strcpy(reinterpret_cast<char *>(raw_device_mac_addr),
-                               reinterpret_cast<const char *>(((struct sockaddr_ll *) address->addr)->sll_addr));
+                               reinterpret_cast<const char *>(((struct sockaddr *) address->addr)->sa_data));
                         snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", raw_device_mac_addr[0], raw_device_mac_addr[1], raw_device_mac_addr[2],
                                  raw_device_mac_addr[3], raw_device_mac_addr[4], raw_device_mac_addr[5]);
                         device_mac_addr = string(mac_addr);
