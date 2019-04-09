@@ -19,8 +19,8 @@ if [[ $? != 0 ]]; then
 fi
 
 script_dir="$(dirname $0)"
-template_path="$script_dir/doc/bp_index_template.json"
-objects_path="$script_dir/doc/saved_objects.json"
+template_path="$script_dir/resources/elk/bp_index_template.json"
+objects_path="$script_dir/resources/elk/saved_objects.json"
 
 tmp=${template_path##*/}
 template_name=${tmp%.*}
