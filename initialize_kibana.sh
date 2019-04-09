@@ -2,21 +2,30 @@
 
 
 if [[ $# != 1 ]]; then
-    echo "Error: 'requires 1 argument': USAGE: ./$0 <host>" > /dev/stderr
+    echo "Error: 'requires 1 argument': USAGE: $0 <host>" > /dev/stderr
     exit 1
 fi
 
 host="$1"
-nc -vz "$host" 9200 2>/dev/null
-if [[ $? != 0 ]]; then
-    echo "Error: cannot connect to Elasticsearch daemon" > /dev/stderr
-    exit 2
+
+# only execute if netcat is installed
+command -v nc 1>/dev/null 2>/dev/null
+if [[ $? == 0 ]]; then
+    nc -vz "$host" 9200 2>/dev/null
+    if [[ $? != 0 ]]; then
+        echo "Error: cannot connect to Elasticsearch daemon" > /dev/stderr
+        exit 2
+    fi
+    nc -vz "$host" 5601 2>/dev/null
+    if [[ $? != 0 ]]; then
+        echo "Error: cannot connect to Kibana daemon" > /dev/stderr
+        exit 2
+    fi
+else
+    echo "Warning: 'missing netcat': unable to verify connection to daemons" > /dev/stderr
 fi
-nc -vz "$host" 5601 2>/dev/null
-if [[ $? != 0 ]]; then
-    echo "Error: cannot connect to Kibana daemon" > /dev/stderr
-    exit 2
-fi
+
+exit 0
 
 script_dir="$(dirname $0)"
 template_path="$script_dir/resources/elk/bp_index_template.json"
