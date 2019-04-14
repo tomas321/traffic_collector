@@ -37,7 +37,7 @@ function readfile() {
     while read -r line; do
         data="$data$line"
     done < "$1"
-    echo -e ${data}
+    echo "${data}"
 }
 
 template_data="$(readfile ${template_path})"
@@ -45,6 +45,6 @@ curl -X PUT "$host:9200/_template/$template_name" -H "Content-Type: application/
 
 
 objects_data="$(readfile ${objects_path})"
-curl -X POST "$host:5601/api/saved_objects/_bulk_create?overwrite=true" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d "$(echo -e ${objects_data})" 1>/dev/null
+curl -X POST "$host:5601/api/saved_objects/_bulk_create?overwrite=true" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d "$(echo ${objects_data})" 1>/dev/null
 
 exit 0
