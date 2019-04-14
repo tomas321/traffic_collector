@@ -1,3 +1,28 @@
+### LaTEX
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.out
+*.synctex.gz
+
 ### C++ template
 # Compiled Object files
 *.slo
@@ -63,3 +88,5 @@ lib/*
 # Ignore any executables
 bin/*
 !bin/collect.cpp
+
+
