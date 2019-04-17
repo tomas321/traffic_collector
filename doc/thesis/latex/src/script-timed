@@ -1,0 +1,42 @@
+#! /usr/bin/env bash
+
+test "$#" -lt 2 && exit 1
+
+count=$1
+iterator=$2
+
+pcap=()
+pfring=()
+netmap=()
+socket=()
+scapy=()
+
+while [ $iterator -gt 0 ]; do
+  # PCAP
+  result=$(./pcap $count)
+  pcap+=("$result")
+  echo "$iterator:   $result - pcap"
+
+  # PFRING
+  result=$(LD_LIBRARY_PATH=/home/tomas/pfring/PF_RING/userland/libpcap-1.8.1 ./pfring $count)
+  pfring+=("$result")
+  echo "$iterator:   $result - pfring"
+
+  # NETMAP
+  result=$(LD_LIBRARY_PATH=/home/tomas/netmap-libpcap ./netmap $count)
+  netmap+=("$result")
+  echo "$iterator:   $result - netmap"
+  
+  # RAW SOCKET
+  result=$(./test_rawsocket.py $count)
+  socket+=" $result"
+  echo "$iterator:   $result - socket"
+  
+  # SCAPY
+  result=$(./test_scapy.py $count)
+  scapy+=" $result"
+  echo "$iterator:   $result - scapy"
+  
+  echo ""
+  iterator=$(expr $iterator - 1)
+done

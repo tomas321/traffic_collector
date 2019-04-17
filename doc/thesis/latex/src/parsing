@@ -1,0 +1,12 @@
+using namespace rapidjson
+
+StringBuffer = json_pkt
+Writer<rapidjson.StringBuffer> writer(json_pkt)
+
+writer.StartObject();
+writer.Key("ip.src");
+writer.String("100.154.25.6")
+writer.Key("ip.dst");
+writer.String("78.56.1.236")
+writer.EndObject();
+// json_pkt == {"ip.src": "100.154.25.6", "ip.dst": "78.56.1.236"}

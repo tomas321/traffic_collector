@@ -1,0 +1,66 @@
+===11-02-2018===
+- Start deploying functional ELK stack.
+- Begin scripting Ansible automation
+
+
+===18-02-2018===
+- Test automated (Ansible) deployment of the ELK stack.
+- Begin programming the sensor (Controller class) and setting up its configuration file.
+- Load configuration file to C++ structures.
+- Configuration object verifying configuration file.
+
+
+===25-02-2018===
+- Add test index for checking database connectivity.
+- Implement the prototype Database class and Log class.
+- Redirect error messages and other to log file.
+
+
+===04-03-2018===
+- Start network capturing development of the Interface_connection class.
+- Include Parser class with RapidJSON library.
+
+
+===11-03-2018===
+- Include multi-threading between database control object and capturing object.
+- Insert first packet to the database.
+- Add complete packet parsing in the Parser class.
+
+
+===18-03-2018===
+- Add monitoring features (check database disk space and log file disk usage).
+- Parse Elasticsearch response JSON of summarized data.
+- Test delete_by_query API.
+- Test archiving log files and logging continuity.
+
+
+===25-03-2018===
+- Add initialization logging and release alpha version.
+- Create examplary visualizations in Kibana.
+- Version testing with various sensor configurations.
+
+
+===01-04-2018===
+- Fix misconceptions and optimize program.
+
+
+===08-04-2018===
+- Structure technical documentation.
+- Possible changes in program (optimizations).
+
+
+===15-04-2018===
+- Final testing and documentation.
+- Start writing missing thesis sections.
+
+
+===22-04-2018===
+- Empty week for corrections and finalization.
+
+
+==29-04-2018===
+- Release version 1.0.0.
+
+
+===06-05-2018===
+- Project deadline 07-05-2018.

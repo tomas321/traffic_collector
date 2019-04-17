@@ -1,0 +1,27 @@
+# contents of the /etc/sensor/conf.d/example.conf
+
+# capture interface and mode
+#default interface => not specified
+interface     eth1
+#default direction => promisc
+direction     promisc
+
+# filters as allowed traffic
+# default => not specified
+filter        src 10.0.100.56, dst 8.8.8.8
+
+# Filebeat connection specification
+# default host => localhost:12000
+beats.host    192.148.56.4
+beats.port    12000
+
+# Elasticseach connection specification
+# default => localhost:9200
+elastic.host  192.148.56.4
+elastic.port  12000
+
+# archive output path and archivation condition
+# default => /etc/sensor/
+archive_path  /home/user/sensor_archive/
+# default => 10000 [MB]
+archive_limit 50000

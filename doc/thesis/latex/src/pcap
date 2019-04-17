@@ -1,0 +1,9 @@
+struct bpf_program bpf;
+bpf_u_int32 ip_addr, netmask;
+
+pcap_lookupnet("eth1", &ip_addr, &netmask, error_buf);
+pcap_t *handle = pcap_open_live("eth1", BUFSIZE, 1, 1000, error_buf);
+pcap_compile(handle, &bpf, "dst 8.8.8.8", 0, ip_addr);
+pcap_setfilter(handle, &bpf);
+
+pcap_loop(handle, 0, callback_fnc, NULL);

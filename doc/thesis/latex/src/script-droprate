@@ -1,0 +1,42 @@
+#! /usr/bin/env bash
+
+test "$#" -lt 2 && exit 1
+
+time="$1s"
+iterator=$2
+
+pcap=()
+pfring=()
+netmap=()
+socket=()
+scapy=()
+
+while [ $iterator -gt 0 ]; do
+  echo "$iterator more loop tests.."
+  # PCAP
+  result=$(timeout $time ./pcap)
+  pcap+=("$result")
+  echo "$iterator:   $result - pcap"
+  
+  # PFRING
+  result=$(LD_LIBRARY_PATH=/home/tomas/pfring/PF_RING/userland/libpcap-1.8.1 timeout $time ./pfring)
+  pfring+=("$result")
+  echo "$iterator:   $result - pfring"
+  
+  # NETMAP
+  result=$(LD_LIBRARY_PATH=/home/tomas/netmap-libpcap timeout $time ./netmap)
+  netmap+=("$result")
+  echo "$iterator:   $result - netmap"
+	
+  # RAW SOCKET
+  result=$(timeout $time ./test_rawsocket)
+  socket+=("$result")
+  echo "$iterator:   $result - socket"
+  
+  # SCAPY
+  result=$(timeout $time ./test_scapy.py)
+  scapy+=("$result")
+  echo "$iterator:   $result - scapy"
+  
+  iterator=$(expr $iterator - 1)
+done
