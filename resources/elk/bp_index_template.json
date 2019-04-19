@@ -221,6 +221,12 @@
         },
         "geoip.destination": {
           "type": "keyword"
+        },
+        "service.source": {
+          "type": "integer"
+        },
+        "service.destination": {
+          "type": "integer"
         }
       }
     }
