@@ -12,7 +12,7 @@
 int main(int argc, char **argv) {
     Logging::init(LOG_INFO);
 
-    sensor_settings sensor_config{"eno1", sniff_direction::promisc};
+    sensor_settings sensor_config{"wlo1", sniff_direction::promisc};
     filter_settings filter_config{"", ""};
     Processor *parser;
     DatabaseController *db_control;

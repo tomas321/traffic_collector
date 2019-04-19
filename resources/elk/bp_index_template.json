@@ -103,7 +103,7 @@
           "type": "integer"
         },
         "ipv6.next_header": {
-          "type": "integer"
+          "type": "keyword"
         },
         "ipv6.ttl": {
           "type": "integer"
