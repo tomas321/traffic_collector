@@ -223,6 +223,10 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             break;
         case Layers::TCP:
             tcp = reinterpret_cast<TCP *>(packet_layer);
+            json->start_object("service");
+            json->add<uint16_t>("source", tcp->header->src_port);
+            json->add<uint16_t>("destination", tcp->header->dst_port);
+            json->end_object();
             json->start_object("tcp");
             json->add<uint16_t>("source_port", tcp->header->src_port);
             json->add<uint16_t>("destination_port", tcp->header->dst_port);
@@ -237,6 +241,10 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             break;
         case Layers::UDP:
             udp = reinterpret_cast<UDP *>(packet_layer);
+            json->start_object("service");
+            json->add<uint16_t>("source", udp->header->src_port);
+            json->add<uint16_t>("destination", udp->header->dst_port);
+            json->end_object();
             json->start_object("udp");
             json->add<uint16_t>("source_port", udp->header->src_port);
             json->add<uint16_t>("destination_port", udp->header->dst_port);
@@ -246,6 +254,10 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             break;
         case Layers::RDP:
             rdp = reinterpret_cast<RDP *>(packet_layer);
+            json->start_object("service");
+            json->add<uint8_t>("source", rdp->header->src_port);
+            json->add<uint8_t>("destination", rdp->header->dst_port);
+            json->end_object();
             json->start_object("rdp");
             json->add<uint8_t>("flags", rdp->header->flags);
             json->add<uint8_t>("version", rdp->header->version);
@@ -260,6 +272,10 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             break;
         case Layers::DCCP:
             dccp = reinterpret_cast<DCCP *>(packet_layer);
+            json->start_object("service");
+            json->add<uint16_t>("source", dccp->header->src_port);
+            json->add<uint16_t>("destination", dccp->header->dst_port);
+            json->end_object();
             json->start_object("dccp");
             json->add<uint16_t>("source_port", dccp->header->src_port);
             json->add<uint16_t>("destination_port", dccp->header->dst_port);
