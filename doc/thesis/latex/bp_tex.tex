@@ -266,16 +266,7 @@ insmod driver_module.ko RSS=4,4
 	\section{System specification} \label{solution:spec}
 		The final system must include the network sensor implanted in network for capturing packets and the ELK stack, which as the sensor is on a Linux machine. The sensor must then process and parse the received packets into a compatible JSON format for storing it to the database system via an API call.\par
 		The key processes that need to be included are as follows. Choosing an interface as the source of received traffic and specifying the direction (outgoing, incoming or promiscuous mode), specifying the database destination with an IP address and a port and provide filters to be applied on received packets. Furthermore, it must notify the user with potential errors or successful tasks (such as initialization of the sensor) in standard log files in designated system directory. The packet capture and further processing must not create a bottleneck and be ideally processing at wire speed. The system must have control over used space in the database. In such cases, the system finalizes the received data with summarized data and clear the disk space.\par
-		Considering the data visualization, various line graphs, bar graphs, heat maps and trend lines will be periodically updated as new data is received. These visualizations must be modifiable and it must be possible to create new visualizations. The final data set must include all desired protocol header fields and packet meta data such as, timestamp of the received packet, source host of the received data and source interface of that host. The database system should not delay the data stream. The following visualizations must be possible to setup:
-		\begin{itemize}
-			\item What services in use at arbitrary time range.
-			\item Show activity for a specific service at arbitrary time range.
-			\item Network sessions' (host\_1 \texttt{<->} host\_2) activity.
-			\item What is the geographical location of network communication nodes.
-			\item Packet rate or bytes transmitted per arbitrary time unit.
-			\item Statistical packet length models or histograms.
-			\item Trend lines for predicting future traffic.
-		\end{itemize}
+		Considering the data visualization, various line graphs, bar graphs, heat maps and trend lines will be periodically updated as new data is received. These visualizations must be modifiable and it must be possible to create new visualizations. The final data set must include all desired protocol header fields and packet meta data such as, timestamp of the received packet, source host of the received data and source interface of that host. The database system should not delay the data stream. The requested visualizations are listed and briefly explained in \autoref{sol:design:elk:vis} part \emph{Visualizations and database setup}.
 	\section{Design} \label{solution:design}
 		\begin{figure}
 			\centering
@@ -299,13 +290,23 @@ insmod driver_module.ko RSS=4,4
 			\subsubsection*{Kibana}
 				Kibana is configured by a configuration file \emph{/etc/kibana/kibana.yml}. The default configuration (see~\autoref{lst:sol:kibana:conf}) from the installation is correct, since both Kibana and Elasticsearch will coexist on the same physical machine. The received data can be recognized and visualized by Kibana after setting up the index pattern and timestamp. New index pattern is created under Management \texttt{->} Kibana \texttt{->} Index Patterns only after the index occupies at least one document. This limitation can be bypassed by using the Kibana REST API.
 				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:kibana:conf, caption=Kibana sufficient default configuration]{src/kibana.conf}
-			\subsubsection*{Visualization and database setup}
+			\subsubsection*{Visualization and database setup} \label{sol:design:elk:vis}
 				With the index pattern set the requested visualizations are executed by Kibana on indices matching the index pattern. Each  visualization is periodically refreshed as new data is stored. Visualizations are grouped in dashboards (see Appendix~\ref{appendix:sol:dashboard}), which serves as the main page for further data analysis and monitoring. In addition, Kibana includes \emph{Developer tools} to request data with a JSON formatted query for fast search and the \emph{Discover} page which shows the latest received data. Other sections are not in scope of this thesis.\par
 				Following the required visualizations, each is visualized by the most suitable representation:
 				\begin{itemize}
-					\item \emph{"Services in use"} is a line graph displaying the count of packets based on the service (port number). Each line representing a service independent of transport protocol. The x-axis is the time at which the packets were captured. By filtering the services this visualization is for monitoring specific service(s) too.
+					\item \emph{"Services in use"} are two line graphs (source and destination) displaying the count of packets based on the service (port number). Each line representing a service independent of transport protocol. The x-axis is the time at which the packets were captured. By filtering the services this visualization is for monitoring \emph{"specific service(s)"} too.
+					\item \emph{"Geographical location of end nodes"} are two maps (source and destination of traffic) distinguishing multitude by color. The country is resolved from IP address either by the sensor or at the visualization tool.
+					\item \emph{"Differentiating by IP protocol field"} displays UDP, TCP, ICMP and etc. protocol multitudes as a heat map, pie graph and line graph. Heat map groups by packet size ranges on one axis and protocol on the other. Pie graph depicting percentage ratio. Line graph specifically showing the multitude of protocols at a given time, where each line represents single protocol.
+					\item \emph{"Statistical packet size model"} is a bar graph with time axis split by packet size ranges. The ranges specify the small packets, median sizes and large data packet sizes.
+					\item \emph{"Packet flow"} is a line graph with time axis. Dots represent the total count of packets at particular time and a line representing the moving average of the values. It effectively shows the growth or descent of packet flow.
+					\item \emph{"Visualization filters"} include the protocol filter, packet size range select, differentiating between receiving and transmitted (RX and TX) packets and service filter for destination and source port. This is not the filter limitation, but it depicts the most useful ones and other are possible.
+					\item \emph{"Nodes' communications"} is a histogram or tag cloud displaying the most active connection between two hosts (IP addresses). 
 				\end{itemize}
 				
+				To completely automate the initialization process and ready the visualizations all must be functioning when the visualization tool is opened. For Elasticsearch and Kibana it requires loading the index template, create visualizations, index patterns and dashboards. The reason for automation is if the system is duplicated or moved on different machines. It requires to preserve all settings, configurations and visualizations.\par
+				Solution is to use Ansible for deploying the ELK stack components on the target machines. These Ansible roles deploy configured ELK stack components with functioning pipeline ready to receive data on Filebeat, which forwards them to Logstash and Elasticsearch. Missing are the visualizations, which need additional deploying mechanism to ready the visualizations and filters in Kibana. Kibana has its own REST API used for importing and exporting of saved objects\footnote{Saved objects include all index patterns, visualizations, dashboards and saved searches created in Kibana.}.
+				
+				INCLUDE THIS IN IMPLEMENTATION BUT EXPLAIN IT HERE IN DESIGN
 				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}
 				
 				
