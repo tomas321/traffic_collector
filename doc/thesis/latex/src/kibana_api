@@ -1,0 +1,18 @@
+# Create template for indices with 'bp-*' pattern.
+PUT _template/custom_bp_tmeplate
+{
+  "index_patterns": ["bp-*"],
+  "settings": {"index": "number_of_shards": 2},
+  "mappings": {"_doc": {"properties": "FIELD_NAME": {"type": "FIELD_TYPE"}}}
+}
+
+# Export saved objects from Kibana. Returns JSON.
+GET kibana_host:5601/api/saved_objects/_find?type=visualization&type=dashboard&type=search&type=index-pattern&page=1&per_page=20
+
+# Import saved objects. Oversimplified example.
+POST kibana_host:5601/api/saved_objects/_bulk_create
+[
+  {"type": "visualization", "id": 1, "attributes": {}},
+  {"type": "visualization", "id": 2, "attributes": {}},
+  {"type": "dashboard", "id": 3, "attributes": {}}
+]

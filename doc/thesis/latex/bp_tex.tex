@@ -304,14 +304,11 @@ insmod driver_module.ko RSS=4,4
 				\end{itemize}
 				
 				To completely automate the initialization process and ready the visualizations all must be functioning when the visualization tool is opened. For Elasticsearch and Kibana it requires loading the index template, create visualizations, index patterns and dashboards. The reason for automation is if the system is duplicated or moved on different machines. It requires to preserve all settings, configurations and visualizations.\par
-				Solution is to use Ansible for deploying the ELK stack components on the target machines. These Ansible roles deploy configured ELK stack components with functioning pipeline ready to receive data on Filebeat, which forwards them to Logstash and Elasticsearch. Missing are the visualizations, which need additional deploying mechanism to ready the visualizations and filters in Kibana. Kibana has its own REST API used for importing and exporting of saved objects\footnote{Saved objects include all index patterns, visualizations, dashboards and saved searches created in Kibana.}.
-				
-				INCLUDE THIS IN IMPLEMENTATION BUT EXPLAIN IT HERE IN DESIGN
-				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}
-				
+				Solution is to use Ansible for deploying the ELK stack components on the target machines. These Ansible roles deploy configured ELK stack components with functioning pipeline ready to receive data on Filebeat, which forwards them to Logstash and Elasticsearch. Missing are the visualizations, which need additional deploying mechanism to ready the visualizations and filters in Kibana. Kibana has its own REST API used for importing and exporting of saved objects\footnote{Saved objects include all index patterns, visualizations, dashboards and saved searches created in Kibana.}. \autoref{lst:sol:design:init_kibana} briefly depicts the necessary steps for initializing the Kibana environment.				
+				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:design:init_kibana, caption=Initialize Elasticsearch and Kibana.]{src/kibana_api}
 				
 		\subsection{Sensor} \label{solution:design:sensor}
-			The sensor is a Linux program utilizing netmap-based libpcap (supported by \hyperref[analysis:testing:results]{test results}) and the chosen visualization tool and storage system is the ELK stack. 
+			The sensor is a Linux program utilizing netmap-based libpcap (supported by \hyperref[analysis:testing:results]{test results}), the Kibana visualization tool and Elasticsearch as storage system. 
 			\subsubsection*{Initialization}
 				For sensor initialization, it requires
 				\begin{itemize}
@@ -374,6 +371,10 @@ bp_test 2     r   STARTED 76661 415.6mb 10.0.0.1 Andromeda
 			\end{lstlisting}				
 			The validity of GET requests is checked by Elasticsearch and received errors are logged. Additional GET requests must be tested on Elasticsearch beforehand, because there will be no warnings, besides the logs.\par
 			Deleting documents by query, queries the index and removes all matched documents. The deleted portion of index frees up space without interfering with frequent data storing. The summarized data in request responses will be stored in the archive path in parsed structure (parsing JSON to readable data using \emph{Parser} class). According to the \hyperref[figure:sol:datamodel]{class model}, the \emph{understand} function returns a Document Object Model (DOM) object, which is a JSON parsed to C++ compatible object. Each archive file name will comprise of a timestamp and brief contents description distinguishing all archives.
+			
+			THIS BELONG TO KIBANA SETUP IMPLEMENTATION SECTION
+			\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}			
+			
 		\subsection{Logging} \label{implementation:sensor:logging}
 			Logging to \emph{/var/log/sesnor/} directory will be handled by the \emph{Log} class. Logs will be structured including the event's timestamp, log message level, log's source and the raw message (see \emph{log} function in \autoref{figure:sol:datamodel}). The timestamp will be marked in the \emph{Log} class and other parameters will be passed by the caller object. Message level will be statically listed in the \emph{Log} class as an enumeration. For scalability purposes, each class utilizing logging will have a custom source identifier distinguishing it in the log file.\par				
 			The existing message levels are infromative, warnings, errors or debugs.\emph{INFO\_LOG} notifies successful operations or messages of informative manner. \emph{WARN\_LOG} includes warning messages, which are avoidable, but a fix is advised. \emph{ERROR\_LOG} message often comprises of the exception message caught at sensor start up and object initializations. \emph{DEBBUG\_LOG} describes an optional output in the log file.\par
