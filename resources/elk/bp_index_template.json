@@ -49,10 +49,20 @@
           "type": "integer"
         },
         "ip.source": {
-          "type": "ip"
+          "type": "ip",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
         },
         "ip.destination": {
-          "type": "ip"
+          "type": "ip",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
         },
         "icmp.type": {
           "type": "integer"
@@ -109,10 +119,20 @@
           "type": "integer"
         },
         "ipv6.source": {
-          "type": "ip"
+          "type": "ip",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
         },
         "ipv6.destination": {
-          "type": "ip"
+          "type": "ip",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
         },
         "tcp.source_port": {
           "type": "integer"
