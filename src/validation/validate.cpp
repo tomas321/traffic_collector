@@ -6,7 +6,7 @@
 #include "exceptions.h"
 
 string Validation::sensor_config_full_path;
-
+// TODO: document the functions and remove prints and change logging messages
 void Validation::check_key(const string &field_path, const bool &optional) {
     string sensor_path = sensor_config_full_path;
     YAML::Node node = YAML::LoadFile(sensor_path);
