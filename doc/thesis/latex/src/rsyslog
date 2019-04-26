@@ -1,0 +1,4 @@
+$template message_template,"%timegenerated% [%syslogseverity-text%] [%PROCID%] %msg%\n"
+$template log_filename_fmt,"/var/log/traffcol/traffcol-%$YEAR%-%$MONTH%.log"
+
+local1.* ?log_filename_fmt;message_template

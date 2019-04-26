@@ -1,12 +1,20 @@
-using namespace rapidjson
+/* Now an abstraction hidden in Json class
+StringBuffer = json_pkt;
+Writer<rapidjson.StringBuffer> writer(json_pkt); */
 
-StringBuffer = json_pkt
-Writer<rapidjson.StringBuffer> writer(json_pkt)
+Json json; // includes above abstraction and opening a JSON object
+json.start_object("ipv4");
+json.add<string>("source", "string_value");
+json.add<uint16_t>("length", ip.total_length);
+json->end_object();
+// ...
 
-writer.StartObject();
-writer.Key("ip.src");
-writer.String("100.154.25.6")
-writer.Key("ip.dst");
-writer.String("78.56.1.236")
-writer.EndObject();
-// json_pkt == {"ip.src": "100.154.25.6", "ip.dst": "78.56.1.236"}
+json_string = json.stringify() + "\n"; // ends the master object and uses the RapidJSON library for conversion
+
+/* templated Json.add function
+template<typename T>
+int add(string key, T value) {
+    if (Json::add_specific(key, value)) return 0;
+    else return 1;
+}
+*/
