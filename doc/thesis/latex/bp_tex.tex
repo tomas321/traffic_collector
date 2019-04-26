@@ -334,7 +334,7 @@ insmod driver_module.ko RSS=4,4
 				\begin{itemize}[noitemsep]
 					\item resolving the target interface to existing interface and retrieving MAC and IP address
 					\item attempt to set snapshot length, immediate mode and specific buffer size
-					\item set capture direction via native API or via filters
+					\item set capture direction
 				\end{itemize}\par
 				In the callback function the packets are broken down to protocols using a packet parsing library. Each packet is harmonized and converted to JSON string. A suitable library for producing JSON regarding performance \cite{git:benchmark:json}, such as parsing time, memory in use and time it takes to stringify is \emph{RapidJSON}\footnote{\url{http://rapidjson.org/index.html}}. After packet harmonization and parsing the JSON strings are sent through TCP socket to Filebeat.
 			\subsubsection*{Configuration file} \label{implementation:sensor:config}
@@ -357,13 +357,23 @@ insmod driver_module.ko RSS=4,4
 	\section{Sensor} \label{implementation:sensor}
 		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"/etc/sensor/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
 		\subsection{Configuration file validation} \label{implementation:sensor:cfgval}
-			A dynamic validation algorithm for YAML configuration file requires another YAML file specifying the configuration file structure and available fields. The algorithm crawls from the specification file and accordingly validates the fields in the actual configuration file. The only thing it checks is whether mandatory fields are not left out and if it is structured the way it should be. The algorithm is simplified in \autoref{lst:implementation:cfgval}.
+			A dynamic validation algorithm for YAML configuration file requires another YAML file specifying the configuration file structure and available fields. The algorithm crawls through the specification file and accordingly validates the fields in the actual configuration file. The only thing it checks is whether mandatory fields are not left out and if it is structured the way it should be. The algorithm is simplified in \autoref{lst:implementation:cfgval}.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:cfgval, caption=Algorithm for configuration file validation utilizing the YAML parsing library.]{src/validate_config}
+			Calling \emph{validate\_key} (see line 11 in \autoref{lst:implementation:cfgval}) takes the current key of the specification file and a boolean value specifying if it's mandatory. Failed test throws an exception and the program initialization stops. 
 		\subsection{Packet capturing} \label{implementation:sensor:cap}
-			Netmap does not change the modified libpcap from programmers point of view. Packet capturing implementation consists of opening a file descriptor, applying filters to each received packet and opening a loop capture session (see~\autoref{lst:implementation:pcap}). After initialization of the \emph{Interface\_connection} class, the main packet receiving method will be a running thread in the \emph{Controller} class.
-			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:pcap, caption=Libpcap capture code sample]{src/pcap}\par
-			All packet capture relying data is provided by the configuration file specifying the interface used, capture direction and filters.
+			Capture handle in libpcap is well configurable, though it is system dependent and not all preferences are available. All function calls are listed in \autoref{lst:implementation:pcap} and worth mentioning are performance oriented settings according to Libpcap manual page \cite{man:pcap}. Snapshot length of 300, minimizes the CPU time and evades the addition packet reassemble and it should be enough to bound the maximum size of packet headers even in case of tunneling such as \emph{IP in IPv6}\footnote{Size of such packet header might be 24B Ethernet + 40B IPv6 + optional IPv6 extension headers multiple of 8B (e.g. 40B) + tunneled IPv4 of maximum 60B + maximum 60B TCP = 224 \cite{man:ipv6}.} and vice versa. Arriving packets are processed as soon as they arrive with setting the immediate mode. To minimize the packet loss, the buffer size is set to a maximum of 2 GB. The capture direction is set using the libpcap filters by filtering by source and destination MAC address (e.g. \emph{ether dst 10:e3:aa:00:00:12}).
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:pcap, caption=Packet capture handle setup API calls]{src/pcap}\par
+			Correct settings are followed by opening a capture session and looping for infinite number of packets. Each packet is handled in a callback function passing the packet to the parsing process.
 		\subsection{Packet parsing} \label{implementation:sensor:parse}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[scale=0.5]{parsing}
+				\caption{Packet parsing library class model}
+				\label{figure:sol:parselib:model}
+			\end{figure}
+			Firstly, each packet is parsed based on this class model (see~\autoref{figure:sol:parselib:model}) by simple algorithm (see~\autoref{lst:implementation:parselib}). Parsing packet to \emph{Parsed\_packet} object goes through supported layers one by one until acceptable last protocol header is reached (e.g. TCP header). Using such custom parsing library is minimalistic, because it does no extra object creation and is independent of third party libraries. This parsing process is the backbone of understanding raw packet bytes. Called function \emph{parse\_header} parses a given layer and increases the offset from the first byte of raw packet dynamically (IHL field in IPv4) or statically.
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:parselib, caption=Raw packet parsing process]{src/packet_parse}
+			
 			\emph{RapidJSON} library provides the \emph{Simple API for XML} (SAX API), which includes a JSON generator \emph{Writer}. Writer converts keys and values into JSON in a procedural manner (see~\autoref{lst:implementation:parsing}). The parsing is part of \emph{Parser} class and its main parse function takes a libpcap packet structure provided by the caller (\emph{Database\_control} class). Keys specified in the output JSON must correspond to the Elasticsearch database mapping field names. Parsing is expected to execute without errors, since the input is a libpcap packet structure and the output is a JSON string.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:parsing, caption=Packet parsing to JSON format]{src/parsing}
 		\subsection{Committing packets to ELK stack} \label{implementation:sensor:commit}
