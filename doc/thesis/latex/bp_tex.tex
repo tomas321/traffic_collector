@@ -350,10 +350,12 @@ insmod driver_module.ko RSS=4,4
 	\section{ELK stack deployment and setup} \label{implementation:elk}
 		Both deployment and setup is designed as series of Ansible scripts and a single bash script. All ELK stack components are deployed on Debian-based Linux machines (e.g. Ubuntu Server).
 		\subsection{Deployment} \label{implementation:elk:deploy}
-			TODO: as last since the deployment of sensor is not yet finished.
-			Deployment of ELK stack components is executed by series of Ansible roles...
+			Ansible a remote command execution automation tool consisting of various modules (e.g. shell, package, copy, etc.). It utilizes SSH connection for remote deployment, which is the only prerequisite of target machine. A series of Ansible roles\footnote{\url{https://github.com/tomas321/ansible-roles/tree/master/common/elk}}, for each ELK stack component, are executed to fully configure and enable ELK stack. Each component is a Java application, so a requirement is to install a specific version of Java. An exemplary role for deploying Elasticsearch is listed in \autoref{lst:implementation:elastic:deploy}. All roles are documented in the repository.
+			\lstinputlisting[language=Clean, style=appendix, label=lst:implementation:elastic:deploy, caption=Elasticsearch Ansible role overview]{src/elastic_role}
 		\subsection{Setup} \label{implementation:elk:setup}
+			ELK stack components are configured as shown on \autoref{solution:design:elk}. All configurations are derivatives from default configurations, because no extended plugin features are required. For monitoring the data in Kibana an index template with field mapping is created in Elasticsearch and all visualizations in \autoref{sol:design:elk:vis} were configured directly in Kibana. Just as described in \autoref{sol:design:elk:vis}, the Kibana objects are retrieved and ready for importing to an existing instance of Kibana via a script (see~\autoref{lst:sol:init_kibana}).
 			\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}
+			Initialization script puts the index template to Elasticsearch and imports the visualizations via the Kibana REST API. Key script feature is the "-r" read  option to disable backslash interpretation, since the Kibana objects included JSON strings, which are multiple times escaped.
 	\section{Sensor} \label{implementation:sensor}
 		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"/etc/sensor/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
 		\subsection{Configuration file validation} \label{implementation:sensor:cfgval}
@@ -380,16 +382,15 @@ insmod driver_module.ko RSS=4,4
 		\subsection{Committing packets to ELK stack} \label{implementation:sensor:commit}
 			Committing to database is realized by a TCP socket. Prerequisites are connection to Filebeat and setting a keep-alive session. The destination host is specified in the configuration file in a host name format or an IP address. In case of host name, the IP address is resolved by \emph{gethostbyname} system call. A successful address resolution the socket attempts a connection to a specific port. This is the initialization process and on success the newly created object holds the active socket file descriptor. Sending the JSON string requires new-line terminated data (line 12 in \autoref{lst:implementation:parsing}).	
 		\subsection{Logging} \label{implementation:sensor:logging}
-			Logging is realized by local \emph{rsyslog} server configured either manually or utilizing Ansible. Rsyslog and generally syslog server distinguishes sources by facilities \cite{man:syslog} and sensor logs to facility LOG\_LOCAL1 (see~\autoref{lst:implementation:logging}).
+			Logging is realized by local \emph{rsyslog} server configured either manually or utilizing Ansible\footnote{\url{https://github.com/tomas321/ansible-roles/tree/master/common/rsyslog}}. Rsyslog and generally syslog server distinguishes sources by facilities \cite{man:syslog} and sensor logs to facility LOG\_LOCAL1 (see~\autoref{lst:implementation:logging}).
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:logging, caption=Opening syslog and API function for logging]{src/logging}
 			LOG\_CONS - Logs syslog failures to system console.\\
 			LOG\_NDELAY - No delay opening the syslog connection.\\
 			LOG\_PID - Log process ID (PID) with each message.\par
-			Rsyslog is configured in a configuration file (\emph{/etc/rsyslog.d/custom.conf}) with specifying the facility, log levels logged, log message format and a dynamic destination file format (see~\autoref{lst:implementation:rsyslog}).
-			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:rsyslog, caption=Rsyslog configuration file]{src/rsyslog}
-		
-	\section{Ansible automation} \label{implementation:ansible}
-		brief overview of ansible roles and playbooks.
+			Rsyslog is configured in a configuration file (\emph{/etc/rsyslog.d/custom.conf}) with specifying the facility, log levels logged, log message format and a destination file (see~\autoref{lst:implementation:rsyslog}).
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:rsyslog, caption=Rsyslog configuration file]{src/rsyslog}\par
+			To resolve ever-increasing log file size, rsyslog provides log rotation (see~\autoref{lst:implementation:rsyslog}). Logs are rotates only if not empty, each log is rotated 3 times and the rotation is executes when the file size reaches 100k bytes.
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:logrotate, caption=Rsyslog log rotation configuration]{src/logrotate}
 
 \newpage
 \bibliographystyle{plain}

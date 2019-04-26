@@ -1,0 +1,22 @@
+--- # Elasticsearch tasks
+
+- name: install java 8 jre
+  # apt module to install "openjdk-8-jre-headless"
+
+- name: ensure elasticsearch is installed
+  # apt module to install "elasticseach"
+
+- name: load configuration
+  # template module to copy file
+
+- name: remove memory limitations
+  # template module to copy file
+
+- name: ensure /etc/systemd/system/elasticsearch.service.d exists
+  # file module to ensure existance of a path
+
+- name: override elasticsearch systemd memlimit
+  # template module to copy file
+
+- name: restart and enable elasticsearch
+  # systemd module to enable and restart elasticsearch
