@@ -7,10 +7,13 @@
 
 #include <cstdint>
 
+#define RECONNECT_TRYING 3
+
 class DatabaseController {
 private:
     int socket_fd;
     uint16_t port;
+    char *resolved_host;
     char *host;
 
     /**
@@ -27,6 +30,14 @@ private:
      * @return 0 on success, else raises errors.
      */
     int initialize();
+
+    /**
+     * Attempt to reconnect to socket.
+     *
+     * @param data Data to be resent if reconnect succeeds.
+     * @return 0 on success, else return 1.
+     */
+    int reconnect(const char *data);
 
 public:
     /**

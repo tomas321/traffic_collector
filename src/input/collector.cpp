@@ -179,6 +179,7 @@ int Collector::activate_handle() {
 }
 
 int Collector::capture_network_packets(int packet_count) {
+    Logging::log(info, "Starting packet capture");
     if (capture_handle)
         pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char *>(this));
     Logging::log(debug, "Finished capturing of " + to_string(packet_count));
