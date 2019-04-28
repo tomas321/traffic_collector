@@ -1,7 +1,3 @@
-//
-// Created by tomas on 10/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_COLLECTOR_H
 #define TRAFFIC_COLLECTOR_COLLECTOR_H
 

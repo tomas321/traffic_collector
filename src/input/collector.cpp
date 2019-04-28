@@ -1,7 +1,3 @@
-//
-// Created by tomas on 10/03/19.
-//
-
 #include "collector.h"
 #include "logging.h"
 #include "exceptions.h"

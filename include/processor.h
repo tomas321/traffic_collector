@@ -1,7 +1,3 @@
-//
-// Created by tomas on 16/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_PROCESSOR_H
 #define TRAFFIC_COLLECTOR_PROCESSOR_H
 

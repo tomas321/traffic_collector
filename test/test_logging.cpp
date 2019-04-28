@@ -1,7 +1,3 @@
-//
-// Created by tomas on 28/03/19.
-//
-
 #include "catch.hpp"
 #include "logging.h"
 

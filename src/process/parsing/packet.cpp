@@ -1,7 +1,3 @@
-//
-// Created by tomas on 23/03/19.
-//
-
 #include <iostream>
 
 #include "parsing/icmp.h"

@@ -1,7 +1,3 @@
-//
-// Created by tomas on 24/03/19.
-//
-
 #include "catch.hpp"
 #include "json.h"
 

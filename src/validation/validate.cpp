@@ -1,7 +1,3 @@
-//
-// Created by tomas on 06/03/19.
-//
-
 #include "validate.h"
 #include "exceptions.h"
 

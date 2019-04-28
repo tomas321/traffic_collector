@@ -1,7 +1,3 @@
-//
-// Created by tomas on 01/04/19.
-//
-
 #include "parsing/dccp.h"
 #include "parsing/operations.h"
 

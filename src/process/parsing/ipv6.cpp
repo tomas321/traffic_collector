@@ -1,7 +1,3 @@
-//
-// Created by tomas on 23/03/19.
-//
-
 #include "parsing/ipv6.h"
 #include "parsing/operations.h"
 
