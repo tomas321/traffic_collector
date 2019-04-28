@@ -37,33 +37,9 @@ private:
     int add_specific(const string &key, uint32_t value);
     int add_specific(const string &key, uint16_t value);
     int add_specific(const string &key, uint8_t value);
-
-    /**
-     * Add string value.
-     *
-     * @param key String key.
-     * @param value String value.
-     * @return 0 on success.
-     */
     int add_specific(const string &key, string value);
     int add_specific(const string &key, char *value);
-
-    /**
-     * Add double value.
-     *
-     * @param key String key.
-     * @param value Double value.
-     * @return 0 on success.
-     */
     int add_specific(const string &key, double value);
-
-    /**
-     * Add boolean value.
-     *
-     * @param key String key.
-     * @param value Boolean value.
-     * @return 0 on success.
-     */
     int add_specific(const string &key, bool value);
 
 public:
@@ -86,11 +62,19 @@ public:
         else return 1;
     }
 
+    /**
+     * Start object by opening with '"`key`": {'.
+     *
+     * @param key JSON object key.
+     */
     void start_object(const string &key) {
         json_writer->Key(key.c_str());
         json_writer->StartObject();
     }
 
+    /**
+     * End object by closing with '}'.
+     */
     void end_object() {
         json_writer->EndObject();
     }

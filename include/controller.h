@@ -13,7 +13,18 @@ private:
     Harmonization *harmonization;
 
 public:
+    /**
+     * Initialize Main controller.
+     *
+     * @param log_level Minimum log level.
+     */
     explicit Controller(int log_level);
+
+    /**
+     * Create and initialize object variables, run capture process and catch program exceptions.
+     *
+     * @return Exit code.
+     */
     int start();
 };
 

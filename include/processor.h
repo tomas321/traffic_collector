@@ -25,14 +25,6 @@ private:
     string timeval_to_string(const struct timeval &ts);
 
     /**
-     * Sample packet print function.
-     *
-     * @param timestamp String timestamp.
-     * @param packet Raw packet object.
-     */
-    void print_packet_layers(const string &timestamp, uint8_t *raw_packet);
-
-    /**
      * Parse packet to json string.
      *
      * @param packet Address of parsed packet object.
