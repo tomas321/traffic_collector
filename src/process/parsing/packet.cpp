@@ -61,7 +61,7 @@ int Parsed_packet::parse_header(Layer **layer, const uint8_t *bytes, Layers::Typ
             break;
         case Layers::IPv4:
             *layer = new IPv4((bytes + *offset));
-            increase = Layers::header_lengths(*type);
+            increase = static_cast<int>(reinterpret_cast<IPv4 *>(*layer)->header->ihl) * 4; // increase the offset by IHL * 4 bytes
             *type = static_cast<Layers::Type>(reinterpret_cast<IPv4 *>(*layer)->header->protocol);
             break;
         case Layers::IPv6:
