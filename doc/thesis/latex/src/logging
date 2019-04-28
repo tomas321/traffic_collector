@@ -1,0 +1,8 @@
+Logging::Logging(int level) {
+    openlog("traffic_collector", (LOG_CONS | LOG_NDELAY | LOG_PID), LOG_LOCAL1);
+    setlogmask(LOG_UPTO(level));
+}
+
+void Logging::log(int level, const char *msg) {
+    syslog(level, "%s", msg);
+}

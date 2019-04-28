@@ -1,0 +1,26 @@
+int offset = 0; // next packet header offset from 0th byte.
+int done = 0;
+
+num_of_layers = 0;
+Layers::Type layer_type = Layers::Ethernet; // initial layer
+layers = (Layer **) malloc(sizeof(Layer *));
+
+do {
+    layers = (Layer **) realloc(layers, sizeof(Layer *) * (num_of_layers + 1));
+    layers[num_of_layers] = (Layer *) malloc(sizeof(Layer));
+
+    done = parse_header(&layers[num_of_layers], bytes, &layer_type, &offset);
+
+    if (Layers::layer_string(layer_type) == Layers::layer_string(Layers::Unknown)) {
+        done = 1;
+    }
+
+    if (num_of_layers == 0) {
+        layers[num_of_layers]->set_previous(nullptr);
+    } else {
+        layers[num_of_layers]->set_previous(layers[num_of_layers - 1]);
+        layers[num_of_layers - 1]->set_next(layers[num_of_layers]);
+    }
+    layers[num_of_layers]->set_next(nullptr);
+    ++num_of_layers;
+} while (! done);

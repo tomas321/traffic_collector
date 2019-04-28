@@ -1,0 +1,5 @@
+/var/log/traffcol/traffcol {
+    notifempty
+    rotate 3
+    size 100k
+}

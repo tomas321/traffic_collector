@@ -1,0 +1,14 @@
+void validate(specs_config, key) {
+    foreach (iterator : specs_config) {
+        string current_key;
+        if (key.empty()) current_key = iterator.first.scalar();
+        else current_key = "{key}.{iterator.first.scalar()}";
+        if (iterator.second.IsMap()) {
+            # validate if value is a map
+            validate(iterator.second, current_key);
+        } else if (iterator.second.IsScalar()) {
+            # checks if the key is mandatory or optional
+            validate_key(current_key, iterator.second.as<bool>());
+        }
+    }
+}

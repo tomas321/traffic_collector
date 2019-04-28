@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{indentfirst}
+\usepackage{enumitem}
 \usepackage{pdfpages}
 
 \usepackage[titletoc]{appendix}
@@ -277,13 +278,13 @@ insmod driver_module.ko RSS=4,4
 		\subsection{ELK stack initialization} \label{solution:design:elk}
 			Starting from the top of the system architecture model, the ELK stack setup is a prerequisite for functional sensor sending data to database. The deployment of the ELK stack on a remote or local server is handled by series of \emph{Ansible}\footnote{\url{https://www.ansible.com/}} roles. It will install each ELK stack component, including setting up required configuration files. Every component configuration is described in the following subsections. 
 			\subsubsection*{Elasticsearch}
-				Configuring Elasticserach requires setting up a new index for data (see~\autoref{lst:sol:mapping}) and filling out the configuration file located in \emph{/etc/elasticsearch/elasticsearch.yml} (see~\autoref{lst:sol:elastic:conf}). It can be create after correctly configuring Elasticsearch via \emph{curl} program or via Kibana developer's tools.
-				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:mapping, caption=Sample of creating an index in Elasticsearch]{src/create_index}
-				The mapping of the index needs to include all fields. The proper way is to design it in a object form (e.g. \emph{source} object mapping in \autoref{lst:sol:elastic:conf}). Mapping will correspond to real life data types, meaning an IP address has the type \emph{ip} or a geographical coordinates is of type \emph{geo\_point}. All mapping data types are listed in the Elasticsearch documentation\footnote{\url{https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html}}.
+				Configuring Elasticserach requires setting up a new index for data and filling out the configuration file located in \emph{/etc/elasticsearch/elasticsearch.yml} (see~\autoref{lst:sol:elastic:conf}). After correctly configuring Elasticsearch, the index template is created via \emph{curl} program or via Kibana developer's tools (see~\autoref{lst:sol:mapping}).
+				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:mapping, caption=Create index template with index field mapping.]{src/create_template}
+				The mapping of the index needs to include all fields. The proper way is to design it in a object form (e.g. \emph{source} object mapping in \autoref{lst:sol:mapping}). Mapping will correspond to real life data types, meaning an IP address has the type \emph{ip} or a geographical coordinates is of type \emph{geo\_point}. All mapping data types are listed in the Elasticsearch documentation\footnote{\url{https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html}}.
 				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:elastic:conf, caption=Elasticsearch configuration in YAML format]{src/elastic.conf}\par
 				\emph{Path.logs} and \emph{path.data} specified the logging base directory and the path to archoved index data respectively. Most important is the \emph{network.host} in the example, which specifies that any remote system can access the database at specified port. This security vulnerability will be resolved by a firewall setting on the ELK stack server, allowing only the sensor host and localhost connections.
 			\subsubsection*{Filebeat}
-				Filebeat will be configured with a host IP address and a port accepting TCP data. The JSON decoder in Filebeat is notified of receiving JSON formatted data via a tcp stream. All received data will be logged to corresponding log file. The output stream will be forwarded to Logstash socket specified by \emph{output.logstash.hosts} (see~\autoref{lst:sol:filebeat:conf}). In the background, filebeat harmonizes the data by various fields.
+				Filebeat is configured with a host IP address and a port accepting TCP data. The JSON decoder in Filebeat is notified of receiving JSON formatted data via a tcp stream. All received data will be logged to corresponding log file. The output stream will be forwarded to Logstash socket specified by \emph{output.logstash.hosts} (see~\autoref{lst:sol:filebeat:conf}). In the background, filebeat harmonizes the data by filebeat specific fields. This example configuration sets a functional Filebeat receiving and forwarding JSON objects separated by \emph{new-line}.
 				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:filebeat:conf, caption=Filebeat configuration in YAML format]{src/filebeat.conf}
 			\subsubsection*{Logstash}
 				Refering the to the configuration (see Appendix~\autoref{appendix:implementation:logstash}), Logstash will be set up to listen on an arbitrary port and tagging the input. The filter clause removes undesired fields, and renames fields for data field misconception elimination. The original \emph{source} field holds the host address of the the source system sending data to Filebeat. The nested json clause creates a JSON object of the \emph{message} in JSON string type. Once the JSON object is created, the \emph{message} field may be deleted and a final field will be added to mark the future document with an identification of the filter clause used. The output clause sets the forwarding destination, which will be Elasticsearch database API, target index and document type.
@@ -308,79 +309,88 @@ insmod driver_module.ko RSS=4,4
 				\lstinputlisting[language=Clean, style=appendix, label=lst:sol:design:init_kibana, caption=Initialize Elasticsearch and Kibana.]{src/kibana_api}
 				
 		\subsection{Sensor} \label{solution:design:sensor}
-			The sensor is a Linux program utilizing netmap-based libpcap (supported by \hyperref[analysis:testing:results]{test results}), the Kibana visualization tool and Elasticsearch as storage system. 
-			\subsubsection*{Initialization}
-				For sensor initialization, it requires
-				\begin{itemize}
-					\item a configuration file
-					\item running \emph{rsyslog}\footnote{Rsyslog stands for rocket-fast syslog and it is the decedent of syslog.} server or syslog accepting local logs
-					\item 
-				\end{itemize}
-				A suitable JSON library is used for parsing the packets to JSON structures, which are send to the ELK stack for storage and visualization (see~\autoref{figure:sol:architecture}). In between Kibana and the sensor, Filebeat accepts TCP data flow on an open port, specified by Filebeat configuration file. It represents the only communication channel between the sensor and ELK stack.\par
-				Utilizing libpcap, the sensor captures traffic by simple receive, transmit or promiscuous mode and distinguish each packet by this indication. Each received packet is be parsed in scope of required protocols up to the Transport layer excluding the data payload (headers only). IP addresses are resolved in geological location database for country distinguishing. Parsed and harmonized packet data are converted to JSON objects. JSON objects are sent out as raw TCP data to Filebeat. Whole process is simplified in \autoref{figure:sensor:process}.
+			The sensor is a Linux program utilizing netmap-based libpcap (supported by \hyperref[analysis:testing:results]{test results}) capturing network traffic, storing parsed packets to database and logging progress to local or remote rsyslog server.\par
+			Utilizing libpcap, the sensor captures traffic in simple receive, transmit or promiscuous mode and distinguish each packet by this indication. Each received packet is be parsed in scope of required protocols up to the Transport layer excluding the data payload (headers only). IP addresses are resolved in geological location database for country distinguishing. Parsed and harmonized packet data are converted to JSON objects. A suitable JSON library is used for parsing the packets to JSON structures, which are sent out as raw TCP data to Filebeat. Whole process is simplified in \autoref{figure:sensor:process}.
 				\begin{figure}[h]
 					\centering
 					\includegraphics[scale=0.35]{sensor_process}
 					\caption{Sensor packet parsing and processing}
 					\label{figure:sensor:process}
 				\end{figure}
-			\subsubsection*{Data processing and storing} \label{solution:design:process}
-				The sensor is configured by a configuration file, specified by the user. Both interface specification and filters will be included in this configuration file. Configuration file validation is, as other components logged to  success or error. Similarly, the capture will be logged on initialization and log error occurrence. For parsing packet structures, the most suitable library regarding conformance, parsing time, parsing memory and stringify time is \emph{RapidJSON}\footnote{\url{http://rapidjson.org/index.html}} \cite{git:benchmark:json}.\par
-				Before any packet capture, an Elasticsearch index will be created with a given mapping in JSON format. Keeping consistent protocol field types, such as integers, strings or IP addresses is crucial to bypass Elasticsearch field recognization. Filebeat will accept TCP data flow on an open port and forward it to the Logstash service. Filebeat additionally appends some requested meta data, such as source host of the data and timestamp. Logstash has full control over this data and it will remove some extra meta data and add arbitrary static fields like overall data type identification (e.g. "sensor-data").\par
-				The sensor will periodically monitor the database disk usage, until it detects low free space. In such case, the data will be summarized by multiple query requests and a new identical index will be created. Similarly, it will monitor the sensor log files and periodically archive large log files.
+			\subsubsection*{Main process} \label{solution:design:process}
+				\begin{figure}[h]
+					\centering
+					\includegraphics[scale=0.57]{datamodel}
+					\caption{Sensor class model}
+					\label{figure:sol:datamodel}
+				\end{figure}
+				The class model briefly depicts the most crucial parts of the sensor class design (see~\autoref{figure:sol:datamodel}). The sensor is configured by a configuration file, specified by the user. Both interface specification and database connectors will be included in this configuration file. Configuration file is validated before any initialization is performed. More precisely the configuration file specifies:
+				\begin{itemize}[noitemsep]
+					\item target interface and the capture direction
+					\item target Filebeat host and port
+				\end{itemize}\par
+				The format is in YAML for clear interpretation, which requires a YAML parsing library reading the preferences to program structures. Configuration file is read on start of the program and any further modification do not affect the running process.\par
+				Setting up a libpcap capture handle comprises of the following preferences and is followed by opening the handle for active capture processing each packet in a callback function.\par
+				\begin{itemize}[noitemsep]
+					\item resolving the target interface to existing interface and retrieving MAC and IP address
+					\item attempt to set snapshot length, immediate mode and specific buffer size
+					\item set capture direction
+				\end{itemize}\par
+				In the callback function the packets are broken down to protocols using a packet parsing library. Each packet is harmonized and converted to JSON string. A suitable library for producing JSON regarding performance \cite{git:benchmark:json}, such as parsing time, memory in use and time it takes to stringify is \emph{RapidJSON}\footnote{\url{http://rapidjson.org/index.html}}. After packet harmonization and parsing the JSON strings are sent through TCP socket to Filebeat.
+			\subsubsection*{Configuration file} \label{implementation:sensor:config}
+				Configuration file must be located in the designated directory for program configurations - \emph{/etc/traffcol/sensor.conf}, where \emph{traffcol} is an abbreviation for traffic collector. It is the main configuration file loaded by the program.\par
+				The configuration file must include the following fields. The source interface name must correspond to the name listed by \emph{ip link} or \emph{ifconfig} commands. The possible capture direction modes are "out" for outgoing packets, "in" for incoming packets and "promisc" for promiscuous mode. The Filebeat connection specification must be a resolvable host and a port number.\par
+				In case of missing component, the system will log it as an error and request correction. For sample configuration and default configuration refer to the \autoref{lst:sensor:config} in the Appendices section.
+			\subsubsection*{Initialization}
+			For sensor initialization, it requires a configuration file with all mandatory preferences. Of course the prerequisite is the ELK stack initialized and ready with visualizations waiting for new data. Optionally a running \emph{rsyslog}\footnote{Rsyslog stands for rocket-fast syslog and it is the decedent of syslog.} server or syslog accepting local logs. Setting up (r)syslog server can be simple as configuring a destination file and accepting logs from local source if the its on the same machine.\par
+			TODO: EDIT and FINISH: maybe systemd process or just simple as this short paragraph.
+			
 \chapter{Implementation} \label{solution:implementation}
-	According to all specifications and speed requirements, the programming language will be C++, well compatible with netmap libpcap. The sensor will consist of a specific interface connection, packet parsing, logging and database connection. Referring to \autoref{figure:sol:architecture} the implemented component will be the sensor with external logging to files. The ELK stack is configured by respective configuration files and index creation via API call from Kibana developer tool or directly from remote host machine.
+	According to all specifications and speed requirements, the sensor is programmed in C++, well compatible with netmap-based libpcap. The sensor consists of a specific interface as source of network capture, packet parsing, logging and database connection. Referring to \autoref{figure:sol:architecture} the implemented component will be the sensor with logging to files. The ELK stack components are configured by respective configuration file. Kibana and Elasticsearch is initialized by a script via specific APIs.
+	\section{ELK stack deployment and setup} \label{implementation:elk}
+		Both deployment and setup is designed as series of Ansible scripts and a single bash script. All ELK stack components are deployed on Debian-based Linux machines (e.g. Ubuntu Server).
+		\subsection{Deployment} \label{implementation:elk:deploy}
+			Ansible a remote command execution automation tool consisting of various modules (e.g. shell, package, copy, etc.). It utilizes SSH connection for remote deployment, which is the only prerequisite of target machine. A series of Ansible roles\footnote{\url{https://github.com/tomas321/ansible-roles/tree/master/common/elk}}, for each ELK stack component, are executed to fully configure and enable ELK stack. Each component is a Java application, so a requirement is to install a specific version of Java. An exemplary role for deploying Elasticsearch is listed in \autoref{lst:implementation:elastic:deploy}. All roles are documented in the repository.
+			\lstinputlisting[language=Clean, style=appendix, label=lst:implementation:elastic:deploy, caption=Elasticsearch Ansible role overview]{src/elastic_role}
+		\subsection{Setup} \label{implementation:elk:setup}
+			ELK stack components are configured as shown on \autoref{solution:design:elk}. All configurations are derivatives from default configurations, because no extended plugin features are required. For monitoring the data in Kibana an index template with field mapping is created in Elasticsearch and all visualizations in \autoref{sol:design:elk:vis} were configured directly in Kibana. Just as described in \autoref{sol:design:elk:vis}, the Kibana objects are retrieved and ready for importing to an existing instance of Kibana via a script (see~\autoref{lst:sol:init_kibana}).
+			\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}
+			Initialization script puts the index template to Elasticsearch and imports the visualizations via the Kibana REST API. Key script feature is the "-r" read  option to disable backslash interpretation, since the Kibana objects included JSON strings, which are multiple times escaped.
 	\section{Sensor} \label{implementation:sensor}
-		\begin{figure}
-			\centering
-			\includegraphics[scale=0.57]{datamodel}
-			\caption{Class model of the implemented sensor}
-			\label{figure:sol:datamodel}
-		\end{figure}
-		Sensor implementation requires efficient multi-threaded solution, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The main requirement - configuration file, will have a standard Linux white space separated format (e.g. \emph{/etc/hosts} file) with allowed bash style comments. The Configuration class loads the configuration file from the \emph{/etc/sensor/} directory to specific C++ structures - \emph{filter\_config, db\_configa, iface\_config} and validates the file's format. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified filters. If any errors occur the message is logged and process terminated.
-		\subsection{Configuration file} \label{implementation:sensor:config}
-			Configuration file must be located in the designated directory for program configurations (\emph{/etc/sensor/conf.d/test.conf}). The main configuration file \emph{/etc/sensor/sensor.conf} will hold path to configuration files (see~\autoref{lst:config:main}).
-			\begin{lstlisting}[language=bash, style=appendix, caption=Contents of main configuration file, label=lst:config:main]
-/etc/sensor/conf.d/*.conf
-			\end{lstlisting}				
-			The configuration will be loaded on sensor startup and each line is loaded to corresponding data structure. Validations of configuration file will be logged to specific sensor log file. The configuration file must include the following fields. The source interface name must correspond to the name listed by \emph{ip link} or \emph{ifconfig} commands. The possible capture direction modes are "out" for outgoing packets, "in" for incoming packets and "promisc" for promiscuous mode. Packet capture filters are not compulsory, because they slow down the capture process. Nevertheless the allowed syntax is specified by the Berkeley Packet Filter syntax\footnote{\url{https://docs.extrahop.com/7.2/bpf-syntax/}}. The Filebeat and Elasticsearch connection specification must be a resolvable host IP address or host name and port must be a numbering ranging 0-65535. Archive path, must be an existing path on the local file system, where all summarized data will be archived. Archivation is limited by the \emph{archive\_limit} specified in mega bytes, when the index will be archived and cleared. \par
-			In case of missing component, the system will log it as an error and request correction. For sample configuration and default configuration refer to the \autoref{lst:sensor:config} in the Appendices section.
+		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"/etc/sensor/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
+		\subsection{Configuration file validation} \label{implementation:sensor:cfgval}
+			A dynamic validation algorithm for YAML configuration file requires another YAML file specifying the configuration file structure and available fields. The algorithm crawls through the specification file and accordingly validates the fields in the actual configuration file. The only thing it checks is whether mandatory fields are not left out and if it is structured the way it should be. The algorithm is simplified in \autoref{lst:implementation:cfgval}.
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:cfgval, caption=Algorithm for configuration file validation utilizing the YAML parsing library.]{src/validate_config}
+			Calling \emph{validate\_key} (see line 11 in \autoref{lst:implementation:cfgval}) takes the current key of the specification file and a boolean value specifying if it's mandatory. Failed test throws an exception and the program initialization stops. 
 		\subsection{Packet capturing} \label{implementation:sensor:cap}
-			Netmap does not change the modified libpcap from programmers point of view. Packet capturing implementation consists of opening a file descriptor, applying filters to each received packet and opening a loop capture session (see~\autoref{lst:implementation:pcap}). After initialization of the \emph{Interface\_connection} class, the main packet receiving method will be a running thread in the \emph{Controller} class.
-			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:pcap, caption=Libpcap capture code sample]{src/pcap}\par
-			All packet capture relying data is provided by the configuration file specifying the interface used, capture direction and filters.
+			Capture handle in libpcap is well configurable, though it is system dependent and not all preferences are available. All function calls are listed in \autoref{lst:implementation:pcap} and worth mentioning are performance oriented settings according to Libpcap manual page \cite{man:pcap}. Snapshot length of 300, minimizes the CPU time and evades the addition packet reassemble and it should be enough to bound the maximum size of packet headers even in case of tunneling such as \emph{IP in IPv6}\footnote{Size of such packet header might be 24B Ethernet + 40B IPv6 + optional IPv6 extension headers multiple of 8B (e.g. 40B) + tunneled IPv4 of maximum 60B + maximum 60B TCP = 224 \cite{man:ipv6}.} and vice versa. Arriving packets are processed as soon as they arrive with setting the immediate mode. To minimize the packet loss, the buffer size is set to a maximum of 2 GB. The capture direction is set using the libpcap filters by filtering by source and destination MAC address (e.g. \emph{ether dst 10:e3:aa:00:00:12}).
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:pcap, caption=Packet capture handle setup API calls]{src/pcap}\par
+			Correct settings are followed by opening a capture session and looping for infinite number of packets. Each packet is handled in a callback function passing the packet to the parsing process.
 		\subsection{Packet parsing} \label{implementation:sensor:parse}
-			\emph{RapidJSON} library provides the \emph{Simple API for XML} (SAX API), which includes a JSON generator \emph{Writer}. Writer converts keys and values into JSON in a procedural manner (see~\autoref{lst:implementation:parsing}). The parsing is part of \emph{Parser} class and its main parse function takes a libpcap packet structure provided by the caller (\emph{Database\_control} class). Keys specified in the output JSON must correspond to the Elasticsearch database mapping field names. Parsing is expected to execute without errors, since the input is a libpcap packet structure and the output is a JSON string.
+			\begin{figure}[h]
+				\centering
+				\includegraphics[scale=0.5]{parsing}
+				\caption{Packet parsing library class model}
+				\label{figure:sol:parselib:model}
+			\end{figure}
+			Firstly, each packet is parsed based on this class model (see~\autoref{figure:sol:parselib:model}) by simple algorithm (see~\autoref{lst:implementation:parselib}). Parsing packet to \emph{Parsed\_packet} object goes through supported layers one by one until acceptable last protocol header is reached (e.g. TCP header). Using such custom parsing library is minimalistic, because it does no extra object creation and is independent of third party libraries. This parsing process is the backbone of understanding raw packet bytes. Called function \emph{parse\_header} parses a given layer and increases the offset from the first byte of raw packet dynamically (IHL field in IPv4) or statically.
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:parselib, caption=Raw packet parsing process]{src/packet_parse}
+			
+			\emph{RapidJSON} library provides the \emph{Simple API for XML} (SAX API), which includes a JSON generator \emph{Writer}. Writer converts keys and values into JSON in a procedural manner (see~\autoref{lst:implementation:parsing}). Keys specified in the output JSON correspond to the Elasticsearch index mapping. Parsing is expected to execute without errors, since the input is a Parsed\_packet object structure and the output is a JSON string. The sensor has a higher layer API for constructing JSON to support multiple value types. JSON parsing solution sampled in \autoref{lst:implementation:parsing} encapsulates, even the minimum, complexity in a small Json class. It's based on utilizing the C++ function templating as seen in lines 15 through 20.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:parsing, caption=Packet parsing to JSON format]{src/parsing}
+			In this section the packet data is harmonized by geological location from static \emph{GeoIP} database file utilizing a library\footnote{\url{https://github.com/maxmind/geoip-api-c}} for querying such files with source or destination IP addresses. In addition, when knowing the IP addresses the data is compared to the capture interface address and store the direction of the packet (either RX or TX).
 		\subsection{Committing packets to ELK stack} \label{implementation:sensor:commit}
-			Connecting to the database system is part of the \emph{Database\_control} class. The connection parameters, including the Filebeat public IP address and the target port, are specified in a configuration file (see~\autoref{lst:sensor:config}). The established connection with the ELK stack component Filebeat, will provide a TCP stream of raw JSON data. Committing is expected to fail if the connection with Filebeat is lost, which will be properly logged. Successful commit will not be logged, because of the high frequency of commits. Sending data to Filebeat needs to be as fast as it was received and it will require another live libpcap session to send raw TCP data packets. The \emph{Parser} class provides the JSON data of the received packet to the \emph{Database\_control} class.\par
-			This class receives packet structures from the packet capturing thread, running in the \emph{Controller} class, which has a running thread of committing packets to the database system. That is the multi-threaded part of the sensor.
-		\subsection{Checking disk usage} \label{implementation:sensor:disk}		
-			In a separate thread, running in the \emph{Controller} class, the \emph{Database\_control} class has a function monitoring the disk usage directly on the Elasticsearch node, whose connection specifications are read from the configuration structure. It will log the current database state (number of documents and disk usage) and check for low free space.
-			\begin{lstlisting}[language=Clean, caption=Get number of documents and disk usage, label=lst:apicall:diskusage]
-GET "elastic.bp:9200/_cat/shards?v"
-[Sample output]
-index   shard rep state   docs  store   ip       node
-bp_test 2     r   STARTED 76661 415.6mb 10.0.0.1 Andromeda
-			\end{lstlisting}				
-			When the free space gets low, specifically under a specified limit, a periodic function (see simplified code sample in \autoref{lst:sol:checkusage}) checks for such scenario and executes specific tasks.
-			\lstinputlisting[language=C++, style=appendix, caption=Simplified \emph{check\_disk} function, label=lst:sol:checkusage]{src/check_usage}
-			Provided requests can be modified or created as a valid JSON formatted Elasticsearch GET API request query. The main configuration file \emph{/etc/sensor/requests.conf} will hold path to request files (see~\autoref{lst:config:requests}). 
-			\begin{lstlisting}[language=bash, style=appendix, caption=Contents of main requests configuration file, label=lst:config:requests]
-/etc/sensor/requests.d/*.conf
-			\end{lstlisting}				
-			The validity of GET requests is checked by Elasticsearch and received errors are logged. Additional GET requests must be tested on Elasticsearch beforehand, because there will be no warnings, besides the logs.\par
-			Deleting documents by query, queries the index and removes all matched documents. The deleted portion of index frees up space without interfering with frequent data storing. The summarized data in request responses will be stored in the archive path in parsed structure (parsing JSON to readable data using \emph{Parser} class). According to the \hyperref[figure:sol:datamodel]{class model}, the \emph{understand} function returns a Document Object Model (DOM) object, which is a JSON parsed to C++ compatible object. Each archive file name will comprise of a timestamp and brief contents description distinguishing all archives.
-			
-			THIS BELONG TO KIBANA SETUP IMPLEMENTATION SECTION
-			\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}			
-			
+			Committing to database is realized by a TCP socket. Prerequisites are connection to Filebeat and setting a keep-alive session. The destination host is specified in the configuration file in a host name format or an IP address. In case of host name, the IP address is resolved by \emph{gethostbyname} system call. A successful address resolution the socket attempts a connection to a specific port. This is the initialization process and on success the newly created object holds the active socket file descriptor. Sending the JSON string requires new-line terminated data (line 12 in \autoref{lst:implementation:parsing}).	
 		\subsection{Logging} \label{implementation:sensor:logging}
-			Logging to \emph{/var/log/sesnor/} directory will be handled by the \emph{Log} class. Logs will be structured including the event's timestamp, log message level, log's source and the raw message (see \emph{log} function in \autoref{figure:sol:datamodel}). The timestamp will be marked in the \emph{Log} class and other parameters will be passed by the caller object. Message level will be statically listed in the \emph{Log} class as an enumeration. For scalability purposes, each class utilizing logging will have a custom source identifier distinguishing it in the log file.\par				
-			The existing message levels are infromative, warnings, errors or debugs.\emph{INFO\_LOG} notifies successful operations or messages of informative manner. \emph{WARN\_LOG} includes warning messages, which are avoidable, but a fix is advised. \emph{ERROR\_LOG} message often comprises of the exception message caught at sensor start up and object initializations. \emph{DEBBUG\_LOG} describes an optional output in the log file.\par
-			Since, multiple sources will log to the same file, the \emph{Log} class has a \emph{mutex} lock object to handle mutual exclusion of the shared log file. On sensor start up or every 24 hours the log file size will be checked (see~\autoref{lst:sol:checklog}). If the size exceeds 10 MB, it will be archived in the same directory and compressed using the \emph{gunzip}\footnote{\url{https://www.gzip.org/}} compression tool by an OS system call (log rotation). The \emph{check\_log} function will be running in a thread under the \emph{Controller} class.
-			\lstinputlisting[language=C++, style=appendix, caption=Simplified \emph{check\_log} function, label=lst:sol:checklog]{src/check_log}
-	
+			Logging is realized by local \emph{rsyslog} server configured either manually or utilizing Ansible\footnote{\url{https://github.com/tomas321/ansible-roles/tree/master/common/rsyslog}}. Rsyslog and generally syslog server distinguishes sources by facilities \cite{man:syslog} and sensor logs to facility LOG\_LOCAL1 (see~\autoref{lst:implementation:logging}).
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:logging, caption=Opening syslog and API function for logging]{src/logging}
+			LOG\_CONS - Logs syslog failures to system console.\\
+			LOG\_NDELAY - No delay opening the syslog connection.\\
+			LOG\_PID - Log process ID (PID) with each message.\par
+			Rsyslog is configured in a configuration file (\emph{/etc/rsyslog.d/custom.conf}) with specifying the facility, log levels logged, log message format and a destination file (see~\autoref{lst:implementation:rsyslog}).
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:rsyslog, caption=Rsyslog configuration file]{src/rsyslog}\par
+			To resolve ever-increasing log file size, rsyslog provides log rotation (see~\autoref{lst:implementation:rsyslog}). Logs are rotates only if not empty, each log is rotated 3 times and the rotation is executes when the file size reaches 100k bytes.
+			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:logrotate, caption=Rsyslog log rotation configuration]{src/logrotate}
 
 \newpage
 \bibliographystyle{plain}
