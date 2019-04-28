@@ -1,7 +1,3 @@
-//
-// Created by tomas on 01/03/19.
-//
-
 #include <iostream>
 #include "configuration.h"
 #include "logging.h"
@@ -29,25 +25,16 @@ void Configuration::load_configuration(const string &config_path) {
 }
 
 void Configuration::config_database(const YAML::Node &config) {
-    if (config["database"]) {
-        if (config["database"]["beats"]) {
-            main_config.database_config.beats_host = config["database"]["beats"]["host"].as<string>(DEFAULT_BEATS_HOST);
-            main_config.database_config.beats_port = config["database"]["beats"]["port"].as<uint16_t>(DEFAULT_BEATS_PORT);
-        }
+    if (config["beats"]) {
+        main_config.database_config.beats_host = config["beats"]["host"].as<string>(DEFAULT_BEATS_HOST);
+        main_config.database_config.beats_port = config["beats"]["port"].as<uint16_t>(DEFAULT_BEATS_PORT);
     }
 }
 
 void Configuration::config_sensor(const YAML::Node &config) {
     string tmp = config["sensor"]["direction"].as<string>("promisc");
     main_config.sensor_config.direction = str_to_enum(tmp);
-
-    // sensor interface is a mandatory setting.
-    // TODO: should be checked by the validator
-    try {
-        main_config.sensor_config.interface = config["sensor"]["interface"].as<string>();
-    } catch (const YAML::InvalidNode &er) {
-        throw ConfigurationError("sensor.interface is a mandatory setting. missing value.");
-    }
+    main_config.sensor_config.interface = config["sensor"]["interface"].as<string>();
 }
 
 sniff_direction Configuration::str_to_enum(string source) {
@@ -56,7 +43,6 @@ sniff_direction Configuration::str_to_enum(string source) {
     mapper["in"] = sniff_direction::in;
     mapper["out"] = sniff_direction::out;
 
-    // TODO: it should be checked by the configuration checker and not in parsing
     try {
         return mapper.at(source);
     } catch (const std::out_of_range &ex) {

@@ -3,12 +3,12 @@
 # capture interface and mode
 # interface option is mandatory
 sensor:
-  interface: "eth1"
+  interface: "eno1"
   # one of [ in , out , promisc ] default direction = > promisc
   direction: "promisc"
 
 # Filebeat connection specification
 # default host = > localhost :12000
 beats:
-  host: "elk.bo.local"
+  host: "elk.bp.local"
   port: 12000

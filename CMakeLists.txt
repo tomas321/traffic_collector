@@ -20,37 +20,16 @@ set(common_libs
         ${libgeoip})
 
 ## MAIN ##
-add_executable(main bin/main.cpp ${sources})
-target_link_libraries(main ${common_libs})
+add_executable(traffcol bin/traffcol.cpp ${sources})
+target_link_libraries(traffcol ${common_libs})
 
 ## CONFIG ##
-add_executable(load_config bin/load_config.cpp ${sources})
-target_link_libraries(load_config ${common_libs})
+add_executable(traffcol-print-config bin/traffcol-print-config.cpp ${sources})
+target_link_libraries(traffcol-print-config ${common_libs})
 
 ## VALIDATE ##
-add_executable(validate bin/validation.cpp ${sources})
-target_link_libraries(validate ${common_libs})
-
-## COLLECT ##
-add_executable(collect_net bin/collect.cpp ${sources})
-target_link_libraries(collect_net ${common_libs})
-
-## JSON ##
-add_executable(json bin/json.cpp
-        include/json.h
-        src/process/json.cpp)
-
-## Sender ##
-add_executable(sender bin/sender.cpp
-        include/databese_controller.h
-        src/output/databese_controller.cpp
-        src/logging.cpp)
-
-## GEOIP ##
-add_executable(geoip bin/geoip.cpp
-        include/harmonization.h
-        src/process/harmonization.cpp)
-target_link_libraries(geoip ${libgeoip})
+add_executable(traffcol-validate bin/traffcol-validate.cpp ${sources})
+target_link_libraries(traffcol-validate ${common_libs})
 
 ## TESTS ##
 add_executable(test_packet_parsing test/test_example.cpp test/test_main.cpp src/logging.cpp include/logging.h ${parsing_lib})

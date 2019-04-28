@@ -1,7 +1,3 @@
-//
-// Created by tomas on 01/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_CONFIGURATION_H
 #define TRAFFIC_COLLECTOR_CONFIGURATION_H
 
@@ -9,9 +5,7 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 
-#define CONFIG_FULL_PATH "resources/sensor.yml"
-#define DEFAULT_BEATS_HOST "127.0.0.1"
-#define DEFAULT_BEATS_PORT 12000
+#include "config_files.h"
 
 using namespace std;
 

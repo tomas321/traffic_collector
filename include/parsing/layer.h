@@ -57,7 +57,6 @@ namespace Layers {
         try {
             return lmap.at(type);
         } catch (const std::out_of_range &e) {
-            cout << "unknown layer: " << int(type) << endl;
             return lmap.at(Unknown);
         }
     }
@@ -83,7 +82,6 @@ namespace Layers {
         try {
             return lmap.at(type);
         } catch (const std::out_of_range &e) {
-            cout << "unknown: " << int(type) << endl;
             throw std::out_of_range("hdr length");
         }
     }

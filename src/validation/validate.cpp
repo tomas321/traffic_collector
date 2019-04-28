@@ -57,8 +57,8 @@ void Validation::specification_validatation(const YAML::Node &specs, const strin
 //            cout << current_key << " has " << it->second.Scalar() << endl;
             check_key(current_key, it->second.as<bool>());
         } else if (it->second.IsSequence()) {
-            for (int i = 0; i < it->second.size(); ++i)
-                cout << "has " << i << ": " << it->second[i] << endl;
+            for (int i = 0; i < it->second.size(); ++i);
+//                cout << "has " << i << ": " << it->second[i] << endl;
         }
     }
 }

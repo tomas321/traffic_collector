@@ -35,8 +35,7 @@ int Collector::set_capture_handle(const string &device) {
     raw_device_mac_addr = (uint8_t *) malloc(6);
 
     if (pcap_findalldevs(&alldevs, errbuff) == PCAP_ERROR) {
-        Logging::log(critical, "Couldn't find any available device to capture on");
-        throw CaptureError("No available device");
+        throw CaptureError("Couldn't find any available device to capture on", critical);
     }
 
     for (pcap_if_t *current = alldevs; current != NULL; current = current->next) {
@@ -176,7 +175,7 @@ int Collector::activate_handle() {
 
     if (ret > 0) Logging::log(warning, string(pcap_geterr(capture_handle)));
     else if (ret < 0 && ret != PCAP_ERROR_ACTIVATED) throw CaptureError(string(pcap_geterr(capture_handle)));
-    else if (ret == PCAP_ERROR_ACTIVATED) Logging::log(warning, "Attempting to activate already active handle");
+    else if (ret == PCAP_ERROR_ACTIVATED) Logging::log(warning, "Failed attempt to activate already active handle");
     else return 0;
 
     return 1;

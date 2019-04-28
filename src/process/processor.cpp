@@ -1,7 +1,3 @@
-//
-// Created by tomas on 16/03/19.
-//
-
 #include "processor.h"
 #include "parsing/packet.h"
 #include "parsing/ipv4.h"
@@ -36,10 +32,6 @@ string Processor::timeval_to_string(const struct timeval &ts) {
     return string(str_timestamp);
 }
 
-void Processor::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
-    cout << "[" << timestamp << "]" << endl;
-}
-
 void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp,
                                const uint8_t *packet, const uint8_t *handle_mac_addr) {
     int bytes;
@@ -57,10 +49,14 @@ string Processor::jsonize_packet(const uint8_t *raw_packet, const uint32_t packe
                                  string timestamp,
                                  const uint8_t *handle_mac_addr) {
     Json json;
-    // TODO: handle errors.
-    Parsed_packet packet(raw_packet);
-    Layer **layers = packet.get_layers();
+    Layer **layers;
     uint8_t *src_mac = nullptr, *dst_mac = nullptr;
+    try {
+        Parsed_packet packet(raw_packet);
+        layers = packet.get_layers();
+    } catch (exception &ex) {
+        throw ParserError();
+    }
 
     // Loop layers using the next pointer of the double linked list.
     for (Layer *current = *layers; current != nullptr; current = current->get_next()) {
@@ -91,7 +87,6 @@ string Processor::jsonize_packet(const uint8_t *raw_packet, const uint32_t packe
     return json.stringify() + "\n"; // new-line separates json strings
 }
 
-// TODO: redo as templated function (change as last) !!!
 int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     Ethernet *eth;
     IPv4 *ipv4;
@@ -105,8 +100,6 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     DCCP *dccp;
 
     string geoip_src, geoip_dst, protoname;
-
-//    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
     switch (packet_layer->get_layer_type()) {
         case Layers::Ethernet:

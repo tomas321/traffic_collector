@@ -107,7 +107,7 @@ int DatabaseController::send(const char *data) {
         if ((bytes = reconnect(data)) == -1)
             throw SocketError("Failed to reconnect socket: " + string(strerror(errno)));
         Logging::log(info, "Successfully reconnected socket. Data sent.");
-        return int(bytes); // wrote 0 bytes of data. Next write should work
+        return int(bytes);
     }
 
     return int(bytes);

@@ -1,7 +1,3 @@
-//
-// Created by tomas on 09/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_VALIDATE_H
 #define TRAFFIC_COLLECTOR_VALIDATE_H
 
@@ -9,7 +5,7 @@
 #include <string>
 #include <iostream>
 
-#define SPECS_CONFIG_PATH "resources/config_specs.yml"
+#include "config_files.h"
 
 using namespace std;
 
