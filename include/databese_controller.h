@@ -6,6 +6,7 @@
 #define TRAFFIC_COLLECTOR_DATABESE_CONTROLLER_H
 
 #include <cstdint>
+#include "configuration.h"
 
 #define RECONNECT_TRYING 3
 
@@ -47,6 +48,13 @@ public:
      * @param host Destination host.
      */
     DatabaseController(uint16_t port, const char *host);
+
+    /**
+     * Create database connection from settings object.
+     *
+     * @param settings `database_settings` object.
+     */
+    DatabaseController(database_settings settings);
 
     /**
      * Destructor closes the socket connection

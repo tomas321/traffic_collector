@@ -12,8 +12,12 @@
 
 using namespace std;
 
-DatabaseController::DatabaseController(uint16_t port, const char *host) : port(port) {
+DatabaseController::DatabaseController(database_settings settings) : DatabaseController(settings.beats_port,
+                                                                                        settings.beats_host.c_str()) {}
+
+DatabaseController::DatabaseController(uint16_t port, const char *host) {
     this->host = const_cast<char *>(host);
+    this->port = port;
     this->resolved_host = resolve_hostname(host);
 
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -36,7 +40,7 @@ char *DatabaseController::resolve_hostname(const char *hostname) {
 
 int DatabaseController::initialize() {
     struct sockaddr_in host_socket;
-    
+
     if (socket_fd == -1) {
         throw SocketError("Failed to open socket: " + string(strerror(errno)));
     }

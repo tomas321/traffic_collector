@@ -1,0 +1,14 @@
+--- # contents of the /etc/sensor/conf.d/example.conf
+
+# capture interface and mode
+# interface option is mandatory
+sensor:
+  interface: "eth1"
+  # one of [ in , out , promisc ] default direction = > promisc
+  direction: "promisc"
+
+# Filebeat connection specification
+# default host = > localhost :12000
+beats:
+  host: "elk.bo.local"
+  port: 12000

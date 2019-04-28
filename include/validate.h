@@ -9,7 +9,7 @@
 #include <string>
 #include <iostream>
 
-#define SPECS_CONFIG_PATH "doc/config_specs.yml"
+#define SPECS_CONFIG_PATH "resources/config_specs.yml"
 
 using namespace std;
 

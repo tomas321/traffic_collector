@@ -24,17 +24,8 @@ void Configuration::load_configuration(const string &config_path) {
 
     YAML::Node config_data = YAML::LoadFile(config_file_path);
 
-    config_filter(config_data);
     config_database(config_data);
     config_sensor(config_data);
-}
-
-void Configuration::config_filter(const YAML::Node &config) {
-    // default is empty string
-    if (config["filter"]) {
-        main_config.filter_config.src_ip = config["filter"]["src"].as<string>("");
-        main_config.filter_config.dst_ip = config["filter"]["dst"].as<string>("");
-    }
 }
 
 void Configuration::config_database(const YAML::Node &config) {
@@ -42,14 +33,6 @@ void Configuration::config_database(const YAML::Node &config) {
         if (config["database"]["beats"]) {
             main_config.database_config.beats_host = config["database"]["beats"]["host"].as<string>(DEFAULT_BEATS_HOST);
             main_config.database_config.beats_port = config["database"]["beats"]["port"].as<uint16_t>(DEFAULT_BEATS_PORT);
-        }
-        if (config["database"]["elastic"]) {
-            main_config.database_config.elastic_host = config["database"]["elastic"]["host"].as<string>(DEFAULT_ELASTIC_HOST);
-            main_config.database_config.elastic_port = config["database"]["elastic"]["port"].as<uint16_t>(DEFAULT_ELASTIC_PORT);
-        }
-        if (config["database"]["archive"]) {
-            main_config.database_config.archive_path = config["database"]["archive"]["path"].as<string>(DEFAULT_ARCHIVE_PATH);
-            main_config.database_config.archive_limit = config["database"]["archive"]["limit"].as<uint32_t>(DEFAULT_ARCHIVE_LIMIT);
         }
     }
 }

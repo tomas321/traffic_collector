@@ -12,18 +12,18 @@
 int main(int argc, char **argv) {
     Logging::init(LOG_INFO);
 
-    sensor_settings sensor_config{"wlo1", sniff_direction::promisc};
-    filter_settings filter_config{"", ""};
+    sensor_settings sensor_config{"eno1", sniff_direction::promisc};
+    database_settings database_config{"elk.bp.local", 12000};
     Processor *parser;
     DatabaseController *db_control;
     Harmonization *harmonization;
 
     try{
-        db_control = new DatabaseController(12000, "elk.bp.local");
+        db_control = new DatabaseController(database_config);
         harmonization = new Harmonization();
         parser = new Processor(db_control, harmonization);
-        Collector c(sensor_config, filter_config, parser);
-        c.capture_network_packets(0);
+        Collector c(sensor_config, parser);
+        c.capture_network_packets(3);
         delete db_control;
     } catch (SocketError &e) {
         Logging::log(e.get_severity(), e.what());
