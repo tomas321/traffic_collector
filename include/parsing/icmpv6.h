@@ -1,7 +1,3 @@
-//
-// Created by tomas on 31/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_ICMPV6_H
 #define TRAFFIC_COLLECTOR_ICMPV6_H
 

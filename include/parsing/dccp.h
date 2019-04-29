@@ -1,7 +1,3 @@
-//
-// Created by tomas on 01/04/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_DCCP_H
 #define TRAFFIC_COLLECTOR_DCCP_H
 

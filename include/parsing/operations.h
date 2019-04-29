@@ -1,7 +1,3 @@
-//
-// Created by tomas on 20/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_PROTOCOL_TYPE_H
 #define TRAFFIC_COLLECTOR_PROTOCOL_TYPE_H
 

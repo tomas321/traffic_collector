@@ -1,7 +1,3 @@
-//
-// Created by tomas on 03/03/19.
-//
-
 #include <iostream>
 #include "catch.hpp"
 

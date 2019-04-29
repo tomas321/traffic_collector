@@ -6,11 +6,15 @@
 #define TRAFFIC_COLLECTOR_DATABESE_CONTROLLER_H
 
 #include <cstdint>
+#include "configuration.h"
+
+#define RECONNECT_TRYING 3
 
 class DatabaseController {
 private:
     int socket_fd;
     uint16_t port;
+    char *resolved_host;
     char *host;
 
     /**
@@ -28,6 +32,14 @@ private:
      */
     int initialize();
 
+    /**
+     * Attempt to reconnect to socket.
+     *
+     * @param data Data to be resent if reconnect succeeds.
+     * @return 0 on success, else return 1.
+     */
+    int reconnect(const char *data);
+
 public:
     /**
      * Create database connection.
@@ -36,6 +48,13 @@ public:
      * @param host Destination host.
      */
     DatabaseController(uint16_t port, const char *host);
+
+    /**
+     * Create database connection from settings object.
+     *
+     * @param settings `database_settings` object.
+     */
+    DatabaseController(database_settings settings);
 
     /**
      * Destructor closes the socket connection

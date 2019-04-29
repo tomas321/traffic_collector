@@ -1,14 +1,9 @@
-//
-// Created by tomas on 03/03/19.
-//
+#ifndef TRAFFIC_COLLECTOR_EXCEPTIONS_H
+#define TRAFFIC_COLLECTOR_EXCEPTIONS_H
 
 #include <stdexcept>
 #include "logging.h"
 
-#ifndef TRAFFIC_COLLECTOR_EXCEPTIONS_H
-#define TRAFFIC_COLLECTOR_EXCEPTIONS_H
-
-#endif //TRAFFIC_COLLECTOR_EXCEPTIONS_H
 
 class ConfigurationError : public std::logic_error {
 private:
@@ -53,7 +48,7 @@ class ParserError : public std::logic_error {
 private:
     log_level severity_level;
 public:
-    explicit ParserError(const std::string &msg = "Manipulation with socket raised an error",
+    explicit ParserError(const std::string &msg = "Unexpected error while parsing data",
                          log_level severity_level = error)
             : logic_error(msg), severity_level(severity_level) {}
 
@@ -61,3 +56,6 @@ public:
         return severity_level;
     };
 };
+
+
+#endif //TRAFFIC_COLLECTOR_EXCEPTIONS_H

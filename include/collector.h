@@ -1,7 +1,3 @@
-//
-// Created by tomas on 10/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_COLLECTOR_H
 #define TRAFFIC_COLLECTOR_COLLECTOR_H
 
@@ -12,16 +8,14 @@
 #include "processor.h"
 
 #define GIGABIT_SEC_SIZE 125000000 // data in second on 1Gb/s
-#define SNAPLEN 100
+#define SNAPLEN 300
 #define FILTER_IP(ip, dir) (dir == in) ? "dst host " + ip : "src host " + ip
 #define FILTER_MAC(mac, dir) (dir == in) ? "ether dst " + mac : "ether src " + mac
 
-//  TODO: all methods should return enumerated error codes and mapped to an error string (just as pcap)
 
 class Collector {
 private:
     sensor_settings sensor_config;
-    filter_settings filter_config;
     pcap_t *capture_handle;
     string device_ip_addr;
     string device_mac_addr;
@@ -93,10 +87,9 @@ public:
      * Object constructor.
      *
      * @param sensor_config Sensor configuration structure.
-     * @param filter_config Filter configuration structure.
      * @param parser Parser used for packet parsing
      */
-    Collector(sensor_settings sensor_config, filter_settings filter_config, Processor *parser);
+    Collector(sensor_settings sensor_config, Processor *parser);
 
     /**
      * Object destructor closing the capture handle.
