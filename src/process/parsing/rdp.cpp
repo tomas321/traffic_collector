@@ -1,7 +1,3 @@
-//
-// Created by tomas on 31/03/19.
-//
-
 #include "parsing/rdp.h"
 #include "parsing/operations.h"
 

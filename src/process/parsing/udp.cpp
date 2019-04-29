@@ -1,7 +1,3 @@
-//
-// Created by tomas on 23/03/19.
-//
-
 #include "parsing/udp.h"
 #include "parsing/operations.h"
 

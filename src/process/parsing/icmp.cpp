@@ -1,7 +1,3 @@
-//
-// Created by tomas on 23/03/19.
-//
-
 #include "parsing/icmp.h"
 #include "parsing/operations.h"
 

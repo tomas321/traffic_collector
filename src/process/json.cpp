@@ -1,7 +1,3 @@
-//
-// Created by tomas on 18/03/19.
-//
-
 #include <json.h>
 
 Json::Json() {

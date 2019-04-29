@@ -1,0 +1,9 @@
+---
+
+sensor:
+  interface: false
+  direction: true
+
+beats:
+  host: true
+  port: true

@@ -1,7 +1,3 @@
-//
-// Created by tomas on 10/03/19.
-//
-
 #include "collector.h"
 #include "logging.h"
 #include "exceptions.h"
@@ -15,8 +11,8 @@
 #define LINK_PF AF_LINK
 #endif
 
-Collector::Collector(sensor_settings sensor_config, filter_settings filter_config, Processor *parser)
-        : sensor_config(std::move(sensor_config)), filter_config(std::move(filter_config)), parser(parser) {
+Collector::Collector(sensor_settings sensor_config, Processor *parser) : sensor_config(std::move(sensor_config)),
+                                                                         parser(parser) {
     device_ip_addr = "";
     device_mac_addr = "";
     setup_handle();
@@ -35,8 +31,7 @@ int Collector::set_capture_handle(const string &device) {
     raw_device_mac_addr = (uint8_t *) malloc(6);
 
     if (pcap_findalldevs(&alldevs, errbuff) == PCAP_ERROR) {
-        Logging::log(critical, "Couldn't find any available device to capture on");
-        throw CaptureError("No available device");
+        throw CaptureError("Couldn't find any available device to capture on", critical);
     }
 
     for (pcap_if_t *current = alldevs; current != NULL; current = current->next) {
@@ -48,7 +43,8 @@ int Collector::set_capture_handle(const string &device) {
                         char mac_addr[18];
                         strcpy(reinterpret_cast<char *>(raw_device_mac_addr),
                                reinterpret_cast<const char *>(((struct sockaddr *) address->addr)->sa_data));
-                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", raw_device_mac_addr[0], raw_device_mac_addr[1], raw_device_mac_addr[2],
+                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", raw_device_mac_addr[0],
+                                 raw_device_mac_addr[1], raw_device_mac_addr[2],
                                  raw_device_mac_addr[3], raw_device_mac_addr[4], raw_device_mac_addr[5]);
                         device_mac_addr = string(mac_addr);
 
@@ -87,7 +83,8 @@ int Collector::set_preferences() {
     if (pcap_set_buffer_size(capture_handle, GIGABIT_SEC_SIZE) != 0)
         Logging::log(warning, "Cannot set specified buffer size (" + to_string(GIGABIT_SEC_SIZE) + ")");
     if (choose_capture_timestamping(&ts_type) != 0) {
-        Logging::log(warning, "Cannot set specified timestamp type (" + string(pcap_tstamp_type_val_to_name(ts_type)) + ")");
+        Logging::log(warning,
+                     "Cannot set specified timestamp type (" + string(pcap_tstamp_type_val_to_name(ts_type)) + ")");
     }
     set_direction = distinguish_capture_direction();
     Logging::log(info,
@@ -104,7 +101,9 @@ int Collector::choose_capture_timestamping(int *ts_type) {
     }
 
     if (pcap_set_tstamp_type(capture_handle, *ts_type) == 0) {
-        Logging::log(debug, "Pcap capture timestamp set to desired type (" + string(pcap_tstamp_type_val_to_name(*ts_type)) + ")");
+        Logging::log(debug,
+                     "Pcap capture timestamp set to desired type (" + string(pcap_tstamp_type_val_to_name(*ts_type)) +
+                     ")");
         return 0;
     }
     count = pcap_list_tstamp_types(capture_handle, &types);
@@ -172,16 +171,17 @@ int Collector::activate_handle() {
 
     if (ret > 0) Logging::log(warning, string(pcap_geterr(capture_handle)));
     else if (ret < 0 && ret != PCAP_ERROR_ACTIVATED) throw CaptureError(string(pcap_geterr(capture_handle)));
-    else if (ret == PCAP_ERROR_ACTIVATED) Logging::log(warning, "Attempting to activate already active handle");
+    else if (ret == PCAP_ERROR_ACTIVATED) Logging::log(warning, "Failed attempt to activate already active handle");
     else return 0;
 
     return 1;
 }
 
 int Collector::capture_network_packets(int packet_count) {
+    Logging::log(info, "Starting packet capture");
     if (capture_handle)
         pcap_loop(capture_handle, packet_count, packet_callback, reinterpret_cast<u_char *>(this));
-    Logging::log(debug, "Finished capturing of " + to_string(packet_count));
+    Logging::log(info, "Finished. captured " + to_string(packet_count));
 }
 
 void Collector::packet_callback(u_char *object, const struct pcap_pkthdr *meta, const u_char *bytes) {

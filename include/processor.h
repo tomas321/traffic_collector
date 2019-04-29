@@ -1,7 +1,3 @@
-//
-// Created by tomas on 16/03/19.
-//
-
 #ifndef TRAFFIC_COLLECTOR_PROCESSOR_H
 #define TRAFFIC_COLLECTOR_PROCESSOR_H
 
@@ -27,14 +23,6 @@ private:
      * @return Timestamp as string.
      */
     string timeval_to_string(const struct timeval &ts);
-
-    /**
-     * Sample packet print function.
-     *
-     * @param timestamp String timestamp.
-     * @param packet Raw packet object.
-     */
-    void print_packet_layers(const string &timestamp, uint8_t *raw_packet);
 
     /**
      * Parse packet to json string.

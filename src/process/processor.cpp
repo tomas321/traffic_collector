@@ -1,7 +1,3 @@
-//
-// Created by tomas on 16/03/19.
-//
-
 #include "processor.h"
 #include "parsing/packet.h"
 #include "parsing/ipv4.h"
@@ -36,10 +32,6 @@ string Processor::timeval_to_string(const struct timeval &ts) {
     return string(str_timestamp);
 }
 
-void Processor::print_packet_layers(const string &timestamp, uint8_t *raw_packet) {
-    cout << "[" << timestamp << "]" << endl;
-}
-
 void Processor::process_packet(const uint32_t packet_len, const uint32_t caplen, const struct timeval &timestamp,
                                const uint8_t *packet, const uint8_t *handle_mac_addr) {
     int bytes;
@@ -57,10 +49,14 @@ string Processor::jsonize_packet(const uint8_t *raw_packet, const uint32_t packe
                                  string timestamp,
                                  const uint8_t *handle_mac_addr) {
     Json json;
-    // TODO: handle errors.
-    Parsed_packet packet(raw_packet);
-    Layer **layers = packet.get_layers();
+    Layer **layers;
     uint8_t *src_mac = nullptr, *dst_mac = nullptr;
+    try {
+        Parsed_packet packet(raw_packet);
+        layers = packet.get_layers();
+    } catch (exception &ex) {
+        throw ParserError();
+    }
 
     // Loop layers using the next pointer of the double linked list.
     for (Layer *current = *layers; current != nullptr; current = current->get_next()) {
@@ -91,7 +87,6 @@ string Processor::jsonize_packet(const uint8_t *raw_packet, const uint32_t packe
     return json.stringify() + "\n"; // new-line separates json strings
 }
 
-// TODO: redo as templated function (change as last) !!!
 int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     Ethernet *eth;
     IPv4 *ipv4;
@@ -105,8 +100,6 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
     DCCP *dccp;
 
     string geoip_src, geoip_dst, protoname;
-
-//    Logging::log(debug, "creating json string for " + Layers::layer_string(packet_layer->get_layer_type()));
 
     switch (packet_layer->get_layer_type()) {
         case Layers::Ethernet:
@@ -128,9 +121,9 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint8_t>("flags", ipv4->header->flags);
             json->add<uint16_t>("offset", ipv4->header->offset);
             json->add<uint8_t>("ttl", ipv4->header->ttl);
-            protoname = string(getprotobynumber(ipv4->header->protocol)->p_name);
-            if (! protoname.empty()) cout << "protocol in IP: " << protoname << endl;
-            else protoname = Layers::layer_string(static_cast<Layers::Type>(ipv4->header->protocol));
+            protoname = string(getprotobynumber(ipv4->header->protocol)->p_name); // resolve protocol name system call
+            if (protoname.empty()) protoname = to_string(static_cast<Layers::Type>(ipv4->header->protocol)); // if unsuccessful save the protocol number
+//            else cout << "protocol in IP: " << protoname << endl;
             json->add<string>("protocol", protoname);
             json->add<uint16_t>("checksum", ipv4->header->hdr_checksum);
             json->add<string>("source", IPAddress::to_string(ipv4->header->src_ip));
@@ -213,8 +206,8 @@ int Processor::layer_to_json(Json *json, Layer *packet_layer) {
             json->add<uint32_t>("flow_label", ipv6->header->flow_label);
             json->add<uint16_t>("payload_length", ipv6->header->payload_len);
             protoname = string(getprotobynumber(ipv6->header->next_hdr)->p_name);
-            if (! protoname.empty()) cout << "protocol in IPv6: " << protoname << endl;
-            else protoname = Layers::layer_string(static_cast<Layers::Type>(ipv6->header->next_hdr));
+            if (protoname.empty()) protoname = to_string(static_cast<Layers::Type>(ipv6->header->next_hdr));
+//            else  cout << "protocol in IPv6: " << protoname << endl;
             json->add<string>("next_header", protoname);
             json->add<uint8_t>("ttl", ipv6->header->hop_limit); // or hop_limit
             json->add<string>("source", IPv6Address::to_string(ipv6->header->src_ip));
