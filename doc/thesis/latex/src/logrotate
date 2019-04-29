@@ -1,5 +1,11 @@
-/var/log/traffcol/traffcol {
+/var/log/traffcol/traffcol.log {
     notifempty
-    rotate 3
+    rotate 4
     size 100k
+    create
+    compress
+    nodelaycompress
+    postrotate
+        /usr/sbin/service rsyslog restart > /dev/null 2>/dev/null || true
+    endscript
 }

@@ -22,7 +22,7 @@
     urlcolor=cyan,
 }
 
-\title{Bachelor's thesis}
+\title{Bachelor thesis}
 \author{Tomáš Belluš}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -342,8 +342,7 @@ insmod driver_module.ko RSS=4,4
 				The configuration file must include the following fields. The source interface name must correspond to the name listed by \emph{ip link} or \emph{ifconfig} commands. The possible capture direction modes are "out" for outgoing packets, "in" for incoming packets and "promisc" for promiscuous mode. The Filebeat connection specification must be a resolvable host and a port number.\par
 				In case of missing component, the system will log it as an error and request correction. For sample configuration and default configuration refer to the \autoref{lst:sensor:config} in the Appendices section.
 			\subsubsection*{Initialization}
-			For sensor initialization, it requires a configuration file with all mandatory preferences. Of course the prerequisite is the ELK stack initialized and ready with visualizations waiting for new data. Optionally a running \emph{rsyslog}\footnote{Rsyslog stands for rocket-fast syslog and it is the decedent of syslog.} server or syslog accepting local logs. Setting up (r)syslog server can be simple as configuring a destination file and accepting logs from local source if the its on the same machine.\par
-			TODO: EDIT and FINISH: maybe systemd process or just simple as this short paragraph.
+			For sensor initialization, it requires a configuration file with all mandatory preferences. Of course the prerequisite is the ELK stack initialized and ready with visualizations waiting for new data. Optionally a running \emph{rsyslog}\footnote{Rsyslog stands for rocket-fast syslog and it is the decedent of syslog.} server or syslog accepting local logs. Setting up (r)syslog server can be simple as configuring a destination file and accepting logs from local source if the its on the same machine.
 			
 \chapter{Implementation} \label{solution:implementation}
 	According to all specifications and speed requirements, the sensor is programmed in C++, well compatible with netmap-based libpcap. The sensor consists of a specific interface as source of network capture, packet parsing, logging and database connection. Referring to \autoref{figure:sol:architecture} the implemented component will be the sensor with logging to files. The ELK stack components are configured by respective configuration file. Kibana and Elasticsearch is initialized by a script via specific APIs.
@@ -357,7 +356,7 @@ insmod driver_module.ko RSS=4,4
 			\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}
 			Initialization script puts the index template to Elasticsearch and imports the visualizations via the Kibana REST API. Key script feature is the "-r" read  option to disable backslash interpretation, since the Kibana objects included JSON strings, which are multiple times escaped.
 	\section{Sensor} \label{implementation:sensor}
-		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"/etc/sensor/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
+		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"/etc/traffcol/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
 		\subsection{Configuration file validation} \label{implementation:sensor:cfgval}
 			A dynamic validation algorithm for YAML configuration file requires another YAML file specifying the configuration file structure and available fields. The algorithm crawls through the specification file and accordingly validates the fields in the actual configuration file. The only thing it checks is whether mandatory fields are not left out and if it is structured the way it should be. The algorithm is simplified in \autoref{lst:implementation:cfgval}.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:cfgval, caption=Algorithm for configuration file validation utilizing the YAML parsing library.]{src/validate_config}
@@ -389,7 +388,7 @@ insmod driver_module.ko RSS=4,4
 			LOG\_PID - Log process ID (PID) with each message.\par
 			Rsyslog is configured in a configuration file (\emph{/etc/rsyslog.d/custom.conf}) with specifying the facility, log levels logged, log message format and a destination file (see~\autoref{lst:implementation:rsyslog}).
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:rsyslog, caption=Rsyslog configuration file]{src/rsyslog}\par
-			To resolve ever-increasing log file size, rsyslog provides log rotation (see~\autoref{lst:implementation:rsyslog}). Logs are rotates only if not empty, each log is rotated 3 times and the rotation is executes when the file size reaches 100k bytes.
+			To resolve ever-increasing log file size, rsyslog provides log rotation (see~\autoref{lst:implementation:rsyslog}). Logs are rotates only if not empty, each log is rotated 4 times and the rotation is executed when the file size exceeds 100k bytes. After rotation the new log file is created and the old is compressed with no delay (otherwise it compresses the file after next rotation). To reset the file descriptor of the log file for rsyslog the systemd service is restarted right after the rotation.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:logrotate, caption=Rsyslog log rotation configuration]{src/logrotate}
 
 \newpage
@@ -448,6 +447,10 @@ insmod driver_module.ko RSS=4,4
 		\lstinputlisting[language=bash, style=appendix, label=lst:sensor:config, caption=Configuration example]{src/config}
 	\chapter{Logstash configuration} \label{appendix:implementation:logstash}
 		\lstinputlisting[language=Clean, style=appendix]{src/logstash.conf}
+	\chapter{Installation guide} \label{appendix:install}
+		\lstinputlisting[language=Clean, basicstyle=\tiny\ttfamily, breaklines=true]{guide/installation_guide}
+	\chapter{User's guide} \label{appendix:userguide}
+		\lstinputlisting[language=Clean, basicstyle=\tiny\ttfamily, breaklines=true]{guide/user_guide}
 	\chapter{Plan of work in winter semester}
 		\lstinputlisting[language=Clean, style=appendix]{plan/december}	
 	\chapter{Plan of work in summer semester}
