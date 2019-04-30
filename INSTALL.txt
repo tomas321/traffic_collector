@@ -4,6 +4,14 @@ A full installation guide for dependencies and the traffic_collector program.
 # INSTALL dependencies #
 ########################
 
+installation dependencies:
+  - cmake
+  - make
+  - gcc
+  - g++
+  - libelf-dev, libelf-devel or elfutils-libelf-devel (for netmap)
+
+
 ## yaml-cpp installation ##
 Installation guide is in detail on 'https://github.com/jbeder/yaml-cpp'.
 Simple install on Unix/Linux like systems:
@@ -23,7 +31,7 @@ directory. In scope of this program, there is no need for full installation.
 
 ## geoip-api-c ##
 Intallation guide is in detail on 'https://github.com/maxmind/geoip-api-c'.
-according to the installation guide the building requires GNU make utility.
+according to the installation guide the building requires gmake utility.
 Simple install on Unix/Linux like systems:
   1. Direct download or clone the repository.
   2. Locate to the repository root directory.
@@ -41,8 +49,10 @@ Via Ubuntu PPA:
 
 
 ## netmap ##
-Dependency for installation are the kernel source files which are passed as
-configarion option --kernel-sources
+Installation dependency are the kernel source files which are passed as
+configarion option --kernel-sources. For Debian-based systems download
+'linux-source' and ultimately unpack the downloaded archive. Provide the path
+to unpacked directory to --kernel-sources.
 
 Installation guide is in detail on 'https://github.com/luigirizzo/netmap'. The
 process varies depending on machine NIC used for capturing. The list of
@@ -83,13 +93,11 @@ Simple install on Unix/Linux like systems:
 
 ## traffic_collector ##
 After successfully installing the listed dependencies this is the main guide
-to build traffic_collector on Unix/Linux like system to following dependecies
-are required:
-  - cmake
-  - make
-  - gcc
-  - gmake -> for building geoip library
-  - netlib -> gethostbyname
+to build traffic_collector on Unix/Linux like system.
+Specific dependencies:
+  - libnet1-dev
+  - netlib (for UNIX systems only)
+
 
 Installation process:
   1. Locate to the repository root directory.

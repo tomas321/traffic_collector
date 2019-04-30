@@ -3,4 +3,4 @@ rapidjson
 geoip-api-c
 netmap
 netmap-libpcap
-netlib
+libnet1-dev
