@@ -2,20 +2,32 @@
 ## Usage Guide ##
 #################
 
-
-
 ### Start Traffcol ###
 
 1. Refere to the installation guide file for compilation and installation.
-2. Modify `<REPO_PATH>/resources/config.yml` accordingly.
-3. Locate to <REPO_PATH>.
-3. Run the the built target -> build/traffcol-*.
-
+2. Modify `<REPO_ROOT>/resources/config.yml` accordingly.
+3. Run any of the built targets from <REPO_ROOT>.
+    Example:
+        - locate to <REPO_ROOT>
+        - run `./build/traffcol-validate`
+        - this validates your configuration file
 
 NOTE: If netmap-based libpcap is not your installed libpcap library:
 For running 'traffcol' main executable you must have super-user priveleges
 and prepend the execution with LD_LIBRARY_PATH variable setting the path to
 netmap-based libpcap directory containing the library file.
+
+# Configuration validation #
+1. Locate to <REPO_ROOT>
+2. Run `./build/traffcol-validate`
+
+# Print configuration file #
+1. Locate to <REPO_ROOT>.
+2. Run `./build/traffcol-print-config`.
+
+# Start sensor for packet capture #
+1. Locate to <REPO_ROOT>.
+2. Run `sudo ./build/traffcol`.
 
 
 ### Start Kibana ####
