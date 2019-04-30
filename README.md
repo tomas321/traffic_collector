@@ -13,7 +13,7 @@ Tomas Bellus
 ### USAGE
 #### Start Traffcol
 
-1. Refere to the `INSTALL.txt` file for compilation and installation.
+1. Refer to the `INSTALL.txt` file for compilation and installation.
 2. Modify `<REPO_ROOT>/resources/config.yml` accordingly.
 3. Run any of the built targets from <REPO_ROOT>.
 
