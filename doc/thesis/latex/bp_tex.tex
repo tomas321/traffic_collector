@@ -22,7 +22,7 @@
     urlcolor=cyan,
 }
 
-\title{Bachelor's thesis}
+\title{Bachelor thesis}
 \author{Tomáš Belluš}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -102,15 +102,15 @@
 			Additional resolution to the bottleneck, despite not using scapy, may be applying improvements to data processing on NIC driver level. It would require enabling CPU to process incoming packets by dividing received data among multiple CPU cores. On Linux platforms it is referred to as \emph{Receive-Side Scaling} \texttt{(RSS)} and it "distributes network receive processing across several hardware-based receive queues" \cite{web:redhat:rss}. More precisely, each queue will be handled by single core independently and simultaneously. Unfortunately, this feature is dependent of the NIC driver.
 		\subsection{Packet socket} \label{analysis:mechs:socket}
 			Creating a file descriptor \emph{packet socket}\footnote{\url{http://man7.org/linux/man-pages/man7/packet.7.html}} provides receiving and sending packets at datalink layer. It means that packets are captured before any processing in the Linux network stack as raw frames including all protocol headers \cite{man:packet}. A packet socket with raw network protocol access (raw socket) is opened by a system call (see~\autoref{lst:socket}), where the first argument must be \emph{AF\_PACKET}\footnote{AF\_PACKET is interchangable with PF\_PACKET and they stand for Address Family and Protocol Family respectively specified the communication domain.\cite{man:socket}} \cite{man:socket}, which indicates the protocal family. \emph{SOCK\_RAW} paramenter identifies that it is a raw socket providing a whole encapsulated Ethernet frame. Macro parameter \emph{ETH\_P\_ALL} specifies the socket protocol, which is expected on receive so in this case we require all protocols to be passed to socket interface \cite{man:packet}.
-			\begin{lstlisting}[language=C, style=appendix, caption=Raw socket system call, label=lst:socket]
+			\begin{lstlisting}[language=C, style=appendix, caption=Raw socket system call., label=lst:socket]
 int fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 			\end{lstlisting}
 			\par
 			All in all, the packet socket is the interface receiving raw frames, or packets in case of trimming out link layer header, directly form the NIC and efficiently bypassing the network stack processing. This is an advantage concerning performance, because it produces only one copy of received data (from NIC driver to packet socket file descriptor) \cite{thesis:muni}\cite{web:raw_socket}. The shared memory between kernel and user space is the packet socket file descriptor. In contrast with basic address family \emph{AF\_INET}, packet socket provides socket option for packet capture statistics (PACKET\_STATISTICS), which is crucial for performance testing. In comparison with scapy it is the opposite in development and execution time point of view - it is presumably faster than scapy, but more complex to implement.\par
 			\begin{figure}[h]
 				\centering
-				\includegraphics[scale=0.27]{linux_net_capture_struct}
-				\caption{UNIX packet capture architecture for Libpcap or packet socket}
+				\includegraphics[scale=0.4]{linux_net_capture_struct}
+				\caption{UNIX packet capture architecture for Libpcap or packet socket.}
 				\label{figure:libpcap:struct}
 			\end{figure}
 		\subsection{Libpcap} \label{analysis:mechs:libpcap}
@@ -118,18 +118,18 @@ int fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 			Moreover, as of libpcap release 0.9.5, this library supports capture statistics for protocol family PF\_PACKET by a \emph{getsockopt()} system call \cite{git:libpcap0.9:changes}. In reference to \hyperref[analysis:mechs:scapy_rss]{scapy} and \hyperref[analysis:mechs:socket]{packet socket}, libpcap provides more abstraction to implementations by wrapping socket operations to library functions and similar performance to packet socket.
 		\subsection{PF\_RING} \label{analysis:mechs:pfring}
 			Moving from user space library to the kernel space modules and possible zero-copy mechanisms, brings \emph{PF\_RING}\footnote{\url{https://www.ntop.org/products/packet-capture/pf_ring/}}. On socket layer it is a protocol family, replacing PF\_PACKET, but it requires loading a kernel module. On application layer, PF\_RING has an API for accessing received packets. PF\_RING lacking extra enhancements and independent of NIC driver is referred to as PF\_RING Vanilla. As of performance, through Linux New API (NAPI)\footnote{NAPI is a performance increase for packet capturing at higher packet rates, by enabling packet polling, therefore decreasing number of interrupts which otherwise would overwhelm the CPU \cite{web:linux:napi}} the kernel module copies polled packets from the NIC to shared memory ring buffers accessible by user application (see~\autoref{figure:pfring:overview})\cite{web:pfring:vanilla}. This process bypasses Linux network stack and the standard NIC driver. On the other hand, the performance depends on multiple hardware-based queues (\hyperref[analysis:mechs:scapy_rss]{RSS}) in form of shared memory ring buffers (see~\autoref{lst:rss}). Nevertheless, at least one shared memory ring buffer is created after loading the module to kernel. \cite{docs:pfring:vanilla}
-			\begin{lstlisting}[language=bash, caption=Enabling RSS \cite{docs:pfring:rss}, label=lst:rss]
+			\begin{lstlisting}[language=bash, caption=Enabling RSS \cite{docs:pfring:rss}., label=lst:rss]
 insmod driver_module.ko RSS=4,4
 # enables 4 queues per interface (in this case two)
 # the driver_module is the PF_RING enabled NIC driver
 			\end{lstlisting}
 			\par
-			Worth mentioning is the PF\_RING\_ZC, which is a zero-copy alternative to PF\_RING Vanilla. It is strictly NIC driver dependent framework, which neglects NAPI, kernel modules and standard NIC driver to maximize efficiency by directly accessing NIC (DNA) (see~\autoref{figure:pfring:overview}). Inserting the correct PF\_RING-provided NIC driver enables an interface to be opened in zero-copy mode\footnote{Interface in the zero-copy mode has the "zc:" prefix (e.g. eth0 in zero-copy mode is accessed by zc:eth0). \cite{docs:pfring:zero}}. Any application can access packets through its API on 1-10 Gbit links at wire speed \cite{docs:pfring:zero}, if the kernel is bypassed. Otherwise the driver replaces the standard NIC driver and is faster compared to PF\_RING Vanilla \cite{web:pfring:zero}. Disadvantages are, that while accessing NIC in zero-copy mode, standard networking is on hold until the device at hand is closed \cite{web:pfring:zero} and due to bypassing kernel packet filtering is missing \cite{docs:pfring:zero}.\par
+			Worth mentioning is the PF\_RING\_ZC, which is a zero-copy alternative to PF\_RING Vanilla. It is strictly NIC driver dependent framework, which neglects NAPI, kernel modules and standard NIC driver to maximize efficiency by directly accessing NIC (DNA) (see~\autoref{figure:pfring:overview}). Inserting the correct PF\_RING-provided NIC driver enables an interface to be opened in zero-copy mode\footnote{Interface in the zero-copy mode has the "zc:" prefix (e.g. eth0 in zero-copy mode is accessed by zc:eth0) \cite{docs:pfring:zero}.}. Any application can access packets through its API on 1-10 Gbit links at wire speed \cite{docs:pfring:zero}, if the kernel is bypassed. Otherwise the driver replaces the standard NIC driver and is faster compared to PF\_RING Vanilla \cite{web:pfring:zero}. Disadvantages are, that while accessing NIC in zero-copy mode, standard networking is on hold until the device at hand is closed \cite{web:pfring:zero} and due to bypassing kernel packet filtering is missing \cite{docs:pfring:zero}.\par
 			Most valuable is the modified libpcap library\footnote{\url{https://github.com/ntop/PF_RING/tree/dev/userland/libpcap-1.8.1}} (pfring-libpcap) provided by the PF\_RING framework. Pfring-libpcap requires the PF\_RING module inserted and applications need to be recompiled with linking the new libpcap and specifically linking PF\_RING library (libpfring) \cite{docs:pfring:libpcap}. 
 			\begin{figure}[h]
 				\centering
 				\includegraphics[scale=0.35]{overall_pf_ring}
-				\caption{PF\_RING variants and architecture overview}
+				\caption{PF\_RING variants and architecture overview \cite{image:ntop}.}
 				\label{figure:pfring:overview}
 			\end{figure}
 		\subsection{Netmap} \label{analysis:mechs:netmap}
@@ -137,7 +137,7 @@ insmod driver_module.ko RSS=4,4
 			\begin{figure}
 				\centering
 				\includegraphics[scale=0.3]{netmap_rings}
-				\caption{Netmap ring buffer design}
+				\caption{Netmap ring buffer design \cite{image:netmap}.}
 				\label{figure:netmap:rings}
 			\end{figure}
 			Moreover, it requires a modified driver to be loaded to kernel, which provides maximum performance at wire rate if the netmap native API is used. Just as PF\_RING, netmap provides a netmap-based libpcap by creating a modified library, which maps libpcap standard calls to netmap calls \cite{report:netmap}. Even though, the netmap libpcap has weaker performance in comparison with its native API, it does show improvement to the libpcap library \cite{video:netmap}. For compatibility purposes, opposing to the native API the netmap libpcap may be the most efficient mechanism variant.
@@ -146,7 +146,7 @@ insmod driver_module.ko RSS=4,4
 		This section focuses on performance testing process and its results. Packet capture efficiency (drop rate) of received traffic and time elapsed are measured and evaluated. Brief focus on \hyperref[analysis:testing:auto]{testing automation}, followed by the \hyperref[analysis:testing:tests]{specific tests} of both mentioned aspects and finally providing test \hyperref[analysis:testing:results]{results}.
 		\subsection{Automation} \label{analysis:testing:auto}
 			A bash script is used for efficient performance testing (see Appendices~\ref{appendix:script:droprate} and \ref{appendix:script:timed}) of both packet capture efficiency and elapsed time of captured traffic. For most mechanisms the implementation is straightforward, but running multiple executables (binary files) of single C program with various libpcap versions requires additional variables. It was the most crucial part of testing, since only one libpcap library version can be installed on a system. Appending the \emph{/etc/ld.so.conf} with directory paths of other libpcap versions partially solved the problem. Although, only one extra libpcap version can be added this way, since the linker works in a "first match" sense. For example, the target library was pfring-libpcap, but it was linked to netmap libpcap (see~\autoref{lst:compilation:pcap}).
-			\begin{lstlisting}[language=bash, caption=Contents of /etc/ld.so.conf.d/libpcaps.conf, label=lst:compilation:pcap]
+			\begin{lstlisting}[language=bash, caption=Contents of /etc/ld.so.conf.d/libpcaps.conf., label=lst:compilation:pcap]
 # paths to multiple libpcap libraries
 /home/tomas/libpcaps/netmap-libpcap/
 /home/tomas/libpcaps/PF_RING/userland/libpcap-1.8.1/
@@ -196,7 +196,7 @@ insmod driver_module.ko RSS=4,4
  					179 000	& 5 370 000 & 88 012 & 5 281 988 \\
  					\hline
 				\end{tabular}
-					\caption{Scapy measured drop rate}
+					\caption{Scapy measured drop rate.}
 					\label{table:scapy:drop}
 				\end{table}
 				\par
@@ -218,7 +218,7 @@ insmod driver_module.ko RSS=4,4
 			\begin{figure}
 				\centering
 				\includegraphics[scale=0.5]{logstash-filebeat}
-				\caption{ELK stack set up including Filebeat}
+				\caption{ELK stack setup including Filebeat \cite{image:elk}.}
 				\label{figure:storage:elk}
 			\end{figure}
 			Logstash provides parsing, filtering and queuing data streams from multiple sources to be inserted into Elasticseacrh database (see~\autoref{figure:storage:elk}). It is useful for data enrichment and modification before it is inserted in bulk\footnote{Documents wrapped in batches sent via one HTTP request \cite{docs:elastic:bulk}.} requests, rather than single documents. In its configuration are data input streams' specifications, filter clauses including transformations and output stream, which is usually the Elasticsearch database. It reads various input streams like Filebeat, Elasticsearch or raw TCP data stream.\par
@@ -236,7 +236,7 @@ insmod driver_module.ko RSS=4,4
 			\begin{figure}[h]
 				\centering
 				\includegraphics[scale=0.7]{osfingerprinting}
-				\caption{OS fingerprinting with known IPv4 fields}
+				\caption{OS fingerprinting with known IPv4 fields \cite{web:osfinger}.}
 				\label{figure:data:osfinger}
 			\end{figure}
 			Additionally, according to an article on operating system (OS) fingerprinting with packets \cite{web:osfinger}, the TTL, packet size, flags and other option fields in the IPv4 protocol header can be used to determine the OS of the source endpoint (see~\autoref{figure:data:osfinger}). Based on this assumption, the network traffic is analyzed from more security concerned point of view, by grouping hosts by OS.
@@ -338,12 +338,11 @@ insmod driver_module.ko RSS=4,4
 				\end{itemize}\par
 				In the callback function the packets are broken down to protocols using a packet parsing library. Each packet is harmonized and converted to JSON string. A suitable library for producing JSON regarding performance \cite{git:benchmark:json}, such as parsing time, memory in use and time it takes to stringify is \emph{RapidJSON}\footnote{\url{http://rapidjson.org/index.html}}. After packet harmonization and parsing the JSON strings are sent through TCP socket to Filebeat.
 			\subsubsection*{Configuration file} \label{implementation:sensor:config}
-				Configuration file must be located in the designated directory for program configurations - \emph{/etc/traffcol/sensor.conf}, where \emph{traffcol} is an abbreviation for traffic collector. It is the main configuration file loaded by the program.\par
+				Configuration file must be located in the designated directory for program configurations - \emph{/project\_root/resources/traffcol.yml}, where \emph{traffcol} is an abbreviation for traffic collector. It is the main configuration file loaded by the program.\par
 				The configuration file must include the following fields. The source interface name must correspond to the name listed by \emph{ip link} or \emph{ifconfig} commands. The possible capture direction modes are "out" for outgoing packets, "in" for incoming packets and "promisc" for promiscuous mode. The Filebeat connection specification must be a resolvable host and a port number.\par
 				In case of missing component, the system will log it as an error and request correction. For sample configuration and default configuration refer to the \autoref{lst:sensor:config} in the Appendices section.
 			\subsubsection*{Initialization}
-			For sensor initialization, it requires a configuration file with all mandatory preferences. Of course the prerequisite is the ELK stack initialized and ready with visualizations waiting for new data. Optionally a running \emph{rsyslog}\footnote{Rsyslog stands for rocket-fast syslog and it is the decedent of syslog.} server or syslog accepting local logs. Setting up (r)syslog server can be simple as configuring a destination file and accepting logs from local source if the its on the same machine.\par
-			TODO: EDIT and FINISH: maybe systemd process or just simple as this short paragraph.
+			For sensor initialization, it requires a configuration file with all mandatory preferences. Of course the prerequisite is the ELK stack initialized and ready with visualizations waiting for new data. Optionally a running \emph{rsyslog}\footnote{Rsyslog stands for rocket-fast syslog and it is the decedent of syslog.} server or syslog accepting local logs. Setting up (r)syslog server can be simple as configuring a destination file and accepting logs from local source if the its on the same machine.
 			
 \chapter{Implementation} \label{solution:implementation}
 	According to all specifications and speed requirements, the sensor is programmed in C++, well compatible with netmap-based libpcap. The sensor consists of a specific interface as source of network capture, packet parsing, logging and database connection. Referring to \autoref{figure:sol:architecture} the implemented component will be the sensor with logging to files. The ELK stack components are configured by respective configuration file. Kibana and Elasticsearch is initialized by a script via specific APIs.
@@ -357,7 +356,7 @@ insmod driver_module.ko RSS=4,4
 			\lstinputlisting[language=Clean, style=appendix, label=lst:sol:init_kibana, caption=Initialize Elasticsearch and Kibana custom prerequisites.]{src/initialize_kibana}
 			Initialization script puts the index template to Elasticsearch and imports the visualizations via the Kibana REST API. Key script feature is the "-r" read  option to disable backslash interpretation, since the Kibana objects included JSON strings, which are multiple times escaped.
 	\section{Sensor} \label{implementation:sensor}
-		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"/etc/sensor/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
+		Sensor is implemented as a single thread program, where each component will be viewed as an object (see~\autoref{figure:sol:datamodel}). The Configuration class loads a YAML configuration file from the \emph{"project\_root/resources/"} directory to specific C++ structures - \emph{db\_config, iface\_config} and validates (see~\autoref{implementation:sensor:cfgval}) the file's format. Configuration file is parsed utilizing \emph{yaml-cpp}\footnote{\url{https://github.com/jbeder/yaml-cpp}} library. Components Interface\_connection and Database\_control are created with corresponding configuration structures, which contents are verified by connection attempt to database system, opening given interface file descriptor with specified preferences. Any errors are logged and the main process is terminated.
 		\subsection{Configuration file validation} \label{implementation:sensor:cfgval}
 			A dynamic validation algorithm for YAML configuration file requires another YAML file specifying the configuration file structure and available fields. The algorithm crawls through the specification file and accordingly validates the fields in the actual configuration file. The only thing it checks is whether mandatory fields are not left out and if it is structured the way it should be. The algorithm is simplified in \autoref{lst:implementation:cfgval}.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:cfgval, caption=Algorithm for configuration file validation utilizing the YAML parsing library.]{src/validate_config}
@@ -389,7 +388,7 @@ insmod driver_module.ko RSS=4,4
 			LOG\_PID - Log process ID (PID) with each message.\par
 			Rsyslog is configured in a configuration file (\emph{/etc/rsyslog.d/custom.conf}) with specifying the facility, log levels logged, log message format and a destination file (see~\autoref{lst:implementation:rsyslog}).
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:rsyslog, caption=Rsyslog configuration file]{src/rsyslog}\par
-			To resolve ever-increasing log file size, rsyslog provides log rotation (see~\autoref{lst:implementation:rsyslog}). Logs are rotates only if not empty, each log is rotated 3 times and the rotation is executes when the file size reaches 100k bytes.
+			To resolve ever-increasing log file size, rsyslog provides log rotation (see~\autoref{lst:implementation:rsyslog}). Logs are rotates only if not empty, each log is rotated 4 times and the rotation is executed when the file size exceeds 100k bytes. After rotation the new log file is created and the old is compressed with no delay (otherwise it compresses the file after next rotation). To reset the file descriptor of the log file for rsyslog the systemd service is restarted right after the rotation.
 			\lstinputlisting[language=C++, style=appendix, label=lst:implementation:logrotate, caption=Rsyslog log rotation configuration]{src/logrotate}
 
 \newpage
@@ -445,9 +444,13 @@ insmod driver_module.ko RSS=4,4
 			\includegraphics[scale=0.38]{dashboard}
 		\end{figure}
 	\chapter{Sensor configuration} \label{appendix:implementation:config}
-		\lstinputlisting[language=bash, style=appendix, label=lst:sensor:config, caption=Configuration example]{src/config}
+		\lstinputlisting[language=bash, style=appendix, label=lst:sensor:config, caption=Configuration example. File is located in \emph{project\_root}/resources/traffcol.yml.]{src/config}
 	\chapter{Logstash configuration} \label{appendix:implementation:logstash}
-		\lstinputlisting[language=Clean, style=appendix]{src/logstash.conf}
+		\lstinputlisting[language=Clean, style=appendix, caption=Configuration file on machine with installed Logstash (/etc/logstash/conf.d/sensor.conf).]{src/logstash.conf}
+	\chapter{Installation guide} \label{appendix:install}
+		\lstinputlisting[language=Clean, basicstyle=\tiny\ttfamily, breaklines=true]{guide/installation_guide}
+	\chapter{User's guide} \label{appendix:userguide}
+		\lstinputlisting[language=Clean, basicstyle=\tiny\ttfamily, breaklines=true]{guide/user_guide}
 	\chapter{Plan of work in winter semester}
 		\lstinputlisting[language=Clean, style=appendix]{plan/december}	
 	\chapter{Plan of work in summer semester}

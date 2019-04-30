@@ -1,0 +1,124 @@
+A full installation guide for dependencies and the traffic_collector program.
+
+##########################
+## INSTALL dependencies ##
+##########################
+
+## yaml-cpp installation ##
+Installation guide is in detail on 'https://github.com/jbeder/yaml-cpp'.
+Simple install on Unix/Linux like systems:
+  1. Direct download or clone the repository.
+  2. Locate to the repository root directory.
+  3. 
+     mkdir build && cd build
+     cmake ..
+     make
+     make install
+
+
+## rapidjson ##
+Rapidjson is a header only library and it should be included in the lib/
+directory. In scope of this program, there is no need for full installation.
+
+
+## geoip-api-c ##
+Intallation guide is in detail on 'https://github.com/maxmind/geoip-api-c'.
+according to the installation guide the building requires GNU make utility.
+Simple install on Unix/Linux like systems:
+  1. Direct download or clone the repository.
+  2. Locate to the repository root directory.
+  3.
+     ./bootstrap # dependent on autoreconf (autoconf, libtool, automake)
+     ./configure
+     gmake
+     gmake check
+     gmake install
+
+Via Ubuntu PPA:
+  1. sudo add-apt-repository ppa:maxmind/ppa
+  2. sudo apt update
+  3. sudo apt install libgeoip1 libgeoip-dev geoip-bin
+
+
+## netmap ##
+Dependency for installation are the kernel source files which are passed as
+configarion option --kernel-sources
+
+Installation guide is in detail on 'https://github.com/luigirizzo/netmap'. The
+process varies depending on machine NIC used for capturing. The list of
+supported NIC drivers can be found in official repository. This is an example
+for Intel 1Gb Adapter with e1000e driver:
+  1. Direct download or clone the repository.
+  2. cd path/to/netmap/LINUX
+  3. 
+    ./configure --no-ext-drivers --kernel-sources=/usr/src/linux-source-4.15.0 
+                --drivers=e1000e
+     make
+     make install
+  4. Disable multiple device offloadings:
+      ethtool -K <device_name> tx off rx off gso off tso off gro off
+  5. Disable pause frames:
+      ethtool -A <device_name> autoneg off tx off rx off
+
+
+## netmap-libpcap ##
+Dependencies are flex and bison packages. If the configuration fails, pass
+--without-flex --without-bison to configuration.
+
+Full installation guide is in official repository 
+'https://github.com/luigirizzo/netmap-libpcap/blob/master/INSTALL.txt'. 
+Simple install on Unix/Linux like systems:
+  1. Direct download or clone the repository.
+  2. Locate to the repository root directory.
+  3. 
+     ./configure
+     make
+     make install (optional)
+        - run 'make install' only if you want to replace your current libpcap.
+
+
+#############
+## INSTALL ##
+#############
+
+## traffic_collector ##
+After successfully installing the listed dependencies this is the main guide
+to build traffic_collector on Unix/Linux like system to following dependecies
+are required:
+  - cmake
+  - make
+  - gcc
+  - gmake -> for building geoip library
+  - netlib -> gethostbyname
+
+Installation process:
+  1. Locate to the repository root directory.
+  2. 
+     mkdir build && cd build
+     cmake ..
+     make
+
+
+## elk stack ##
+Traffic_collector sends captured data to ELK stack infrastructure. Installation
+guide in detailed is on the official elastic website
+'https://www.elastic.co/guide/en/elastic-stack/current/installing-elastic-stack.html'.
+Requirement is to install:
+  - Filebeat
+  - Logstash
+  - Elasticsearch
+  - Kibana
+All components are configured with specific configuration files. To speed up
+the use the ansible for elk stack deployment:
+'https://github.com/tomas321/ansible-roles'
+
+After installing ELK stack components to set up Kibana visualizations for
+immediate network monitoring use the 'initialize_kibana.sh' script which
+requires a direct connection to Kibana and Elasticsearch.
+
+Possible problems:
+  1. If the script was unable to connect, ensure the following passes:
+    - nc -v <elastic.host> 9200
+    - nc -v <kibana.host> 5601
+
+
