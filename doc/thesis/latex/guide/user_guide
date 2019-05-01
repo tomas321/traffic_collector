@@ -45,4 +45,14 @@ running and data is flowing).
    list.
 4. Possible errors will pop-up on the top of the page if no data is yet
    present.
-5. Monitor your network traffic by manipulating filters and time ranges. 
+5. Monitor your network traffic by manipulating filters and time ranges.
+
+## Filters ##
+- Use predefined filter locate on top of the dashboard.
+- More specific filters are possible by clicking an area or a point on graph
+  representing values.
+- To filter by source or destination service (port number) there are 2 options:
+  1. Issue 'service.source:<port>' or 'service.destination:<port>' commands to
+     the top search box.
+  2. Use the 'Add a filter' feature, which is more user friendly boundary
+     settings.
