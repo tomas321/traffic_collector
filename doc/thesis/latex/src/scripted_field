@@ -1,0 +1,11 @@
+if (doc['ethernet.ethertype'].value.compareTo('ipv4') == 0) {
+    if (doc['ip.source.keyword'].value.compareTo(doc['ip.destination.keyword'].value) > 0) {
+        return doc['ip.source'].value + "<->" + doc['ip.destination'].value;
+    }
+    return doc['ip.destination'].value + "<->" + doc['ip.source'].value;
+} else if (doc['ethernet.ethertype'].value.compareTo("ipv6") == 0) {
+    if (doc['ipv6.source.keyword'].value.compareTo(doc['ipv6.destination.keyword'].value) > 0) { 
+        return doc['ipv6.source'].value + "<->" + doc['ipv6.destination'].value;
+    } 
+    return doc['ipv6.destination'].value + "<->" + doc['ipv6.source'].value;
+}
