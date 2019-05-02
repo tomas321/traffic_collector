@@ -224,7 +224,7 @@ insmod driver_module.ko RSS=4,4
 				\begin{figure}[h]
 					\centering
 					\includegraphics[scale=0.39]{overall_speed_line-graph}
-					\caption{Capture performance for testing elapsed time.}
+					\caption{Capture performance for testing elapsed time. Each vertical step is 5 seconds.}
 					\label{figure:tests:alltimed}
 				\end{figure}
 				\begin{figure}[h]
@@ -333,11 +333,12 @@ insmod driver_module.ko RSS=4,4
 				\begin{itemize}
 					\item \emph{"Services in use"} are two line graphs (source and destination) displaying the count of packets based on the service (port number). Each line representing a service independent of transport protocol. The x-axis is the time at which the packets were captured. By filtering the services this visualization is for monitoring \emph{"specific service(s)"} too.
 					\item \emph{"Geographical location of end nodes"} are two maps (source and destination of traffic) distinguishing multitude by color. The country is resolved from IP address either by the sensor or at the visualization tool.
-					\item \emph{"Differentiating by IP protocol field"} displays UDP, TCP, ICMP and etc. protocol multitudes as a heat map, pie graph and line graph. Heat map groups by packet size ranges on one axis and protocol on the other. Pie graph depicting percentage ratio. Line graph specifically showing the multitude of protocols at a given time, where each line represents single protocol.
-					\item \emph{"Statistical packet size model"} is a bar graph with time axis split by packet size ranges. The ranges specify the small packets, median sizes and large data packet sizes.
+					\item \emph{"Packet size ranges"} displays UDP, TCP, ICMP and etc. protocol multitudes as a heat map, pie graph and line graph. Heat map groups by packet size ranges on one axis and protocol on the other. Pie graph depicting percentage ratio. Line graph specifically showing the multitude of protocols at a given time, where each line represents single protocol.
+					\item Time based \emph{"packet size model"} is a bar graph with time axis split by packet size ranges. The ranges specify the small packets, middle sizes and large data packet sizes.
 					\item \emph{"Packet flow"} is a line graph with time axis. Dots represent the total count of packets at particular time and a line representing the moving average of the values. It effectively shows the growth or descent of packet flow.
 					\item \emph{"Visualization filters"} include the protocol filter, packet size range select and differentiating between receiving and transmitted (RX and TX) packets. This is not the filter limitation, but it depicts the most useful ones and other are possible.
 					\item \emph{"Nodes' communications"} is a histogram or tag cloud displaying the most active connections between two hosts (IP addresses). 
+					\item \emph{"Statistical model"} of packet sizes is a line graph showing various statistical metrics, such as count, median, minimum, maximum or standard deviation.
 				\end{itemize}
 				
 				To completely automate the initialization process and ready the visualizations all must be functioning when the visualization tool is opened. For Elasticsearch and Kibana it requires loading the index template, create visualizations, index patterns and dashboards. The reason for automation is if the system is duplicated or moved on different machines. It requires to preserve all settings, configurations and visualizations.\par
@@ -484,8 +485,11 @@ Most of existing solutions are not dependent on external database system, but wo
 		\lstinputlisting[language=Clean, style=appendix]{plan/december}	
 	\chapter{Plan of work in summer semester}
 		\lstinputlisting[language=Clean, style=appendix]{plan/may}
-	\chapter{Plan evaluation}
-		TODO: winter and summer plan evaluation
+	\chapter{Plan self-evaluation}
+		\section{Winter semester}
+			Staring in the summer before the semester I met with my supervisor and discussed the vision of the project with main target aspects. The plan for winter semester was to properly analyze the problem and design a solution with everything documented in this thesis. I made progress each week and kept my supervisor posted with current changes and further work. I analyzed the problem in depth and briefly designed the final system. Although, the design was not complete and the thesis lacked correct implementation sections. Altogether, the thesis was handed over with finalized analysis of the problem and mostly finished design.
+		\section{Summer semester}
+			The plan for finalizing the system included full implementation and documentation. More or less, my progress was following the specified plan, but after few week I diverged from the original plan and was falling back. Nevertheless, after fixing issues that slowed me down (programming misconceptions and barriers and most fitting solutions) I came back on track and followed the plan. Main changes in the plan include logging component from custom class implementation to utilizing the syslog server, the program is not multi-threaded but single. I managed to finish the all sections in time and add deployment options as extra, which makes it a good evenly distributed plan of work.
 	\chapter{Digital submission}
 		\noindent Registration number from AIS: \myEvidenceNumber\\
 		Contents of the digital submission (ZIP archive):\\
