@@ -101,20 +101,6 @@
         "attributes": {
             "description": "",
             "kibanaSavedObjectMeta": {
-                "searchSourceJSON": "{\"index\":\"17353f40-4f59-11e9-8499-c9b904d40253\",\"query\":{\"query\":\"\",\"language\":\"lucene\"},\"filter\":[]}"
-            },
-            "title": "heat_map:protocol-size_correlation",
-            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"6 - 17,676\":\"rgb(0,104,55)\",\"17,676 - 35,346\":\"rgb(135,203,103)\",\"35,346 - 53,016\":\"rgb(255,255,190)\",\"53,016 - 70,685\":\"rgb(249,142,82)\"}}}",
-            "version": 1,
-            "visState": "{\"title\":\"heat_map:protocol-size_correlation\",\"type\":\"heatmap\",\"params\":{\"type\":\"heatmap\",\"addTooltip\":true,\"addLegend\":true,\"enableHover\":true,\"legendPosition\":\"right\",\"times\":[],\"colorsNumber\":4,\"colorSchema\":\"Green to Red\",\"setColorRange\":false,\"colorsRange\":[],\"invertColors\":false,\"percentageMode\":false,\"valueAxes\":[{\"show\":false,\"id\":\"ValueAxis-1\",\"type\":\"value\",\"scale\":{\"type\":\"linear\",\"defaultYExtents\":true},\"labels\":{\"show\":true,\"rotate\":0,\"overwriteColor\":false,\"color\":\"#555\"}}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"3\",\"enabled\":true,\"type\":\"range\",\"schema\":\"group\",\"params\":{\"field\":\"pcap.length.capture\",\"ranges\":[{\"from\":0,\"to\":60},{\"from\":60,\"to\":100},{\"from\":100,\"to\":1500},{\"from\":1500,\"to\":65535}]}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"ip.protocol\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}"
-        },
-        "id": "f0637850-6141-11e9-b790-5305fb2c1862",
-        "type": "visualization"
-    },
-    {
-        "attributes": {
-            "description": "",
-            "kibanaSavedObjectMeta": {
                 "searchSourceJSON": "{\"query\":{\"language\":\"lucene\",\"query\":\"\"},\"filter\":[]}"
             },
             "title": "filter:destination_service",
@@ -293,5 +279,19 @@
         },
         "id": "dd1dafb0-6ced-11e9-8bdf-59b109db7489",
         "type": "dashboard"
+    },
+    {
+        "attributes": {
+            "description": "",
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"17353f40-4f59-11e9-8499-c9b904d40253\",\"query\":{\"language\":\"lucene\",\"query\":\"\"},\"filter\":[]}"
+            },
+            "title": "heat_map:protocol-size_correlation",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"66 - 1,852\":\"rgb(0,104,55)\",\"1,852 - 3,638\":\"rgb(76,176,93)\",\"3,638 - 5,423\":\"rgb(183,224,117)\",\"5,423 - 7,209\":\"rgb(255,255,190)\",\"7,209 - 8,995\":\"rgb(253,191,111)\",\"8,995 - 10,780\":\"rgb(234,88,57)\"}}}",
+            "version": 1,
+            "visState": "{\"title\":\"heat_map:protocol-size_correlation\",\"type\":\"heatmap\",\"params\":{\"type\":\"heatmap\",\"addTooltip\":true,\"addLegend\":true,\"enableHover\":true,\"legendPosition\":\"right\",\"times\":[],\"colorsNumber\":6,\"colorSchema\":\"Green to Red\",\"setColorRange\":false,\"colorsRange\":[],\"invertColors\":false,\"percentageMode\":false,\"valueAxes\":[{\"show\":false,\"id\":\"ValueAxis-1\",\"type\":\"value\",\"scale\":{\"type\":\"linear\",\"defaultYExtents\":true},\"labels\":{\"show\":true,\"rotate\":0,\"overwriteColor\":false,\"color\":\"#555\"}}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"3\",\"enabled\":true,\"type\":\"range\",\"schema\":\"group\",\"params\":{\"field\":\"pcap.length.capture\",\"ranges\":[{\"from\":0,\"to\":60},{\"from\":60,\"to\":70},{\"from\":70,\"to\":100},{\"from\":100,\"to\":1500},{\"to\":65535,\"from\":1500}]}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"ip.protocol\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}"
+        },
+        "id": "f0637850-6141-11e9-b790-5305fb2c1862",
+        "type": "visualization"
     }
 ]
