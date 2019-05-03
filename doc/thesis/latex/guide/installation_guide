@@ -4,6 +4,47 @@ A full installation guide for dependencies and the traffic_collector program.
 ## INSTALL dependencies ##
 ##########################
 
+Either use Ansible or manually install the dependencies. Not all libraries are
+installed by Ansible, so the rest requires manual installation.
+
+### Ansible deployment ###
+Before running Ansible playbooks set the target hosts in the 'hosts' file to
+something like this:
+    elk.bp.local ansible_connection=ssh ansible_user=tomas ansible_python_interpreter="/usr/bin/python3"
+    sensor.bp.local ansible_connection=ssh ansible_user=tomas ansible_python_interpreter="/usr/bin/python3"
+    
+    [elk]
+    elk.bp.local
+
+    [sensor]
+    sensor.bp.local
+
+Note: For each Ansible playbook change the hostname in the playbook according
+the host group as from the above example (name in square brackets).
+
+Ansible playbook 'traffcol/traffcol.yml' in the ansible directory provides the
+deployment these libraries:
+  - cmake
+  - make
+  - gcc
+  - g++
+  - yaml-cpp
+  - geoip-api-c
+  - libnet1-dev
+Deploy it by running:
+  'ansible-playbook -K playbooks/traffcol/traffcol.yml'
+from the root Ansible directory.
+
+To deploy the ELK stack use the 'traffcol/elk.yml' playbook to install and
+configure:
+  - Filebeat
+  - Elasticsearch
+  - Logstash
+  - Kibana
+Deploy it by running:
+  'ansible-playbook -K playbooks/traffcol/elk.yml'
+from the root Ansible directory.
+
 ## yaml-cpp installation ##
 Installation guide is in detail on 'https://github.com/jbeder/yaml-cpp'.
 Simple install on Unix/Linux like systems:
@@ -121,4 +162,10 @@ Possible problems:
     - nc -v <elastic.host> 9200
     - nc -v <kibana.host> 5601
 
-
+## rsyslog ##
+To enable rsyslog use the Ansible playbook 'traffcol/rsyslog.yml' with modified
+target host arccording the 'hosts' file. The playbook sets the target log file
+and configures the log rotation.
+Deploy it by running:
+  'ansible-playbook -K traffcol/rsyslog.yml'
+from the root Ansible directory.

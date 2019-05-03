@@ -54,5 +54,4 @@ running and data is flowing).
 - To filter by source or destination service (port number) there are 2 options:
   1. Issue 'service.source:<port>' or 'service.destination:<port>' commands to
      the top search box.
-  2. Use the 'Add a filter' feature, which is more user friendly boundary
-     settings.
+  2. Use the 'Add a filter' feature, which is more user friendly settings.
