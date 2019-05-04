@@ -38,6 +38,14 @@ public:
 
     Layer **get_layers();
 
+    /**
+     * Resolve protocol number if knonwn.
+     *
+     * @param proto_number Protocol number.
+     * @return Protocol string, else return protocol number as string.
+     */
+    static string resolve_protocol_number(int proto_number);
+
     int get_num_of_layers();
 };
 

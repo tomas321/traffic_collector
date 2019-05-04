@@ -1,4 +1,5 @@
 #include <iostream>
+#include <netdb.h>
 
 #include "parsing/icmp.h"
 #include "parsing/tcp.h"
@@ -16,6 +17,7 @@
 
 Parsed_packet::Parsed_packet(const uint8_t *bytes) {
     int offset = 0, done = 0;
+    string protoname;
 
     num_of_layers = 0;
     Layers::Type layer_type = Layers::Ethernet;
@@ -26,10 +28,10 @@ Parsed_packet::Parsed_packet(const uint8_t *bytes) {
         layers[num_of_layers] = (Layer *) malloc(sizeof(Layer));
 
         done = parse_header(&layers[num_of_layers], bytes, &layer_type, &offset);
+        protoname += "," + resolve_protocol_number(layer_type);
 
-        // TODO: change this solution to unsupported protocols within ip protocol field
         if (Layers::layer_string(layer_type) == Layers::layer_string(Layers::Unknown)) {
-            Logging::log(warning, "parsing unknown layer type and finishing parsing. unknown: " + to_string(int(layer_type)));
+            Logging::log(warning, "parsing unknown layer type and finishing parsing. unknown: " + protoname);
             done = 1;
         }
 
@@ -104,6 +106,18 @@ int Parsed_packet::parse_header(Layer **layer, const uint8_t *bytes, Layers::Typ
 
 Layer **Parsed_packet::get_layers() {
     return layers;
+}
+
+string Parsed_packet::resolve_protocol_number(int proto_number) {
+    string protoname;
+    struct protoent *protocol;
+
+    if ((protocol = getprotobynumber(proto_number))) {
+        protoname = string(protocol->p_name);
+        return protoname;
+    }
+    protoname = to_string(proto_number); // if unsuccessful save the protocol number
+    return protoname;
 }
 
 int Parsed_packet::get_num_of_layers() {
