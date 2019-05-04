@@ -45,7 +45,7 @@
 - Work on ELK stack (the database interface) and its performance.
 - Implementa simple single libpcap program and compile it with all libpcap libraries.
   - netmap-libpcap, pfring-libpcap, standard libpcap.
-- Python is no longer the target programming language => C/C===.
+- Python is no longer the target programming language => C/C++.
 
 
 ===05.11.2018===
