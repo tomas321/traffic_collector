@@ -1,27 +1,34 @@
 
 \thispagestyle{empty}
 
-\section*{Annotation}
+\section*{Anotácia}
 
-\begin{minipage}[t]{1\columnwidth}%
-Slovak University of Technology in Bratislava 
 
-Faculty of Informatics and Information Technologies
+\noindent
+Slovenská technická univerzita v Bratislave
 
-Degree Course: \myStudyProgram\\
+\noindent
+FAKULTA INFORMATIKY A INFORMAČNÝCH TECHNOLÓGIÍ
 
-Author: \myName
+\noindent
+Študijný program: Internetové Technológie\\
 
-Bachelor thesis: \myTitle
+\noindent
+Autor: \myName
 
-Supervisor: \mySupervisor
+\noindent
+Bakalárska práca: Zber a analýza dát o sieťovej premávke
 
+\noindent
+Vedúci bakalárskej práce: \mySupervisor
+
+\noindent
 \myDate%
-\end{minipage}
 
 \bigskip{}
 
-Goal of this thesis is to implement an efficient packet capture tool with storage and analysis of the received data. Key features are fast capture mechanism utilization, storage system and network traffic analysis tool. 
+\noindent
+Cieľom práce je implementovať efektívny mechanizmus pre systém typu UNIX na zber a analýzu sieťovej prevádzky s vhodným databázovým systémom. Hlavnými vlastnosťami sú rýchly zber prevádzky, databázový systém a mechanizmus pre analýzu dát v reálnom čase. Zrýchlenie bežných zberacích mechanizmov vyžaduje zrušenie nadbytočných kópií samotných paketov počas spracovania, zrýchlenie manipuláciu s potrebnými štruktúrami alebo vyradenie sieťového zásobníka systému z procesu. Je potrebné vyvarovať sa potenciálnemu zahlceniu a zabezpečiť analýzu dát v reálnom čase. Návrh a samotné riešenie sa skladá zo zberaču paketov ako program v C++ vy\-u\-ží\-va\-jú\-ci libpcap knižnicu na základe \emph{netmap}u a NoSQL Elasticsearch databázu s Kibana komponentom pre zobraovanie dát. Libpcap na základe netmapu má výhodu kompatibility a rýchly zber paketov. Elasticsearch a Kibana poskytujú rýchle vyhľadávanie a zobrazovacie mechanizmy vhodné pre analýzu sieťovej prevádzky. Aj keď vklad do Elasticsearch databázy je pomalší a predsatvuje možnosť úzkeho hrdla, sú špičky v prevádzke zachytené knižnicov a prejavia sa oneskoreným zobrazením. Naimplementovaný systém sa zameriava na vhodné dáta z paketov pre detekciu sieťových abnormalít a možných sieťových útokov.
 
 \newpage{}\thispagestyle{empty}
 
@@ -31,28 +38,33 @@ Goal of this thesis is to implement an efficient packet capture tool with storag
 \newpage
 
 \thispagestyle{empty}
-\section*{Anotácia}
+\section*{Annotation}
 
-\begin{minipage}[t]{1\columnwidth}%
-Slovenská technická univerzita v Bratislave
+\noindent
+Slovak University of Technology in Bratislava 
 
-Fakulta informatiky a informačných technológií
+\noindent
+FACULTY OF INFORMATICS AND INFORMATION TECHNOLOGIES
 
-Študijný program: Internetové Technológie\\
+\noindent
+Degree Course: \myStudyProgram\\
 
-Autor: \myName
+\noindent
+Author: \myName
 
-Bakalárska práca: Zber a analýza dát o sieťovej premávke
+\noindent
+Bachelor thesis: \myTitle
 
-Vedúci bakalárskej práce: \mySupervisor
+\noindent
+Supervisor: \mySupervisor
 
+\noindent
 \myDate%
-\end{minipage}
 
 \bigskip{}
 
-here
-
+\noindent
+Goal of this thesis is to implement an efficient packet capture tool with storage and analysis of the received data for UNIX system. Key features are fast capture mechanism utilization, storage system and real-time network traffic analysis tool. Speeding up basic packet capture mechanisms requires bypassing redundant copies in packet processing, simplifying the used structures or bypassing the network stack. It is important to overcome factors like bottleneck in processing and fast database search when analyzing data in real-time. The solution consists of a C++ program for network traffic capture utilizing netmap-based libpcap library, NoSQL Elasticsearch database and its Kibana component for data visualization. Netmap-based libpcap provides compatibility and fast packet capture depending on the network adapter. Elasticsearch provides fast data search with preconfigured Kibana visualization tool fit for network traffic analysis. Even though the insertions to Elasticsearch is not in wire rate and could produce a bottleneck, the produced spikes in network flow are buffered by the libpcap library and visualized with small delay. The implemented system targets proper network data to detect network abnormalities and potential network attacks.
 
 \newpage{}\thispagestyle{empty}\medskip{}
 
