@@ -47,4 +47,7 @@ curl -X PUT "$host:9200/_template/$template_name" -H "Content-Type: application/
 objects_data="$(readfile ${objects_path})"
 curl -X POST "$host:5601/api/saved_objects/_bulk_create?overwrite=true" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d "$(echo ${objects_data})" 1>/dev/null
 
+url="$host:5601/api/kibana/settings/visualization:regionmap:showWarnings"
+curl -X POST "$url" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"value": false}' 1>/dev/null
+
 exit 0

@@ -3,7 +3,7 @@
 # capture interface and mode
 # interface option is mandatory
 sensor:
-  interface: "eno1"
+  interface: "wlo1"
   # one of [ in , out , promisc ] default direction = > promisc
   direction: "promisc"
 
