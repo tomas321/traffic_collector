@@ -4,6 +4,8 @@
 #include "processor.h"
 
 #include <netinet/in.h>
+#include <linux/sockios.h>
+#include <libnet.h>
 
 #ifdef __linux
 #define LINK_PF PF_PACKET
@@ -29,6 +31,9 @@ int Collector::set_capture_handle(const string &device) {
     pcap_if_t *alldevs;
     char errbuff[PCAP_ERRBUF_SIZE];
     raw_device_mac_addr = (uint8_t *) malloc(6);
+    char mac_addr[18];
+    struct ifreq ifr;
+    int s;
 
     if (pcap_findalldevs(&alldevs, errbuff) == PCAP_ERROR) {
         throw CaptureError("Couldn't find any available device to capture on", critical);
@@ -40,12 +45,23 @@ int Collector::set_capture_handle(const string &device) {
             for (pcap_addr_t *address = current->addresses; address != NULL; address = address->next) {
                 switch (address->addr->sa_family) {
                     case LINK_PF:
-                        char mac_addr[18];
+                        s = socket(AF_INET, SOCK_DGRAM, 0);
+                        strcpy(ifr.ifr_name, "wlo1");
+                        ioctl(s, SIOCGIFHWADDR, &ifr);
+                        close(s);
                         strcpy(reinterpret_cast<char *>(raw_device_mac_addr),
-                               reinterpret_cast<const char *>(((struct sockaddr *) address->addr)->sa_data));
-                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", raw_device_mac_addr[0],
-                                 raw_device_mac_addr[1], raw_device_mac_addr[2],
-                                 raw_device_mac_addr[3], raw_device_mac_addr[4], raw_device_mac_addr[5]);
+                               reinterpret_cast<const char *>((unsigned char *) ifr.ifr_hwaddr.sa_data));
+                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", ((unsigned char *) ifr.ifr_hwaddr.sa_data)[0],
+                                 ((unsigned char *) ifr.ifr_hwaddr.sa_data)[1], ((unsigned char *) ifr.ifr_hwaddr.sa_data)[2],
+                                 ((unsigned char *) ifr.ifr_hwaddr.sa_data)[3], ((unsigned char *) ifr.ifr_hwaddr.sa_data)[4],
+                                 ((unsigned char *) ifr.ifr_hwaddr.sa_data)[5]);
+
+//                        char mac_addr[18];
+//                        strcpy(reinterpret_cast<char *>(raw_device_mac_addr),
+//                               reinterpret_cast<const char *>((struct sockaddr_ll *) address->addr->sa_data));
+//                        snprintf(mac_addr, sizeof(mac_addr), "%02x:%02x:%02x:%02x:%02x:%02x", raw_device_mac_addr[0],
+//                                 raw_device_mac_addr[1], raw_device_mac_addr[2],
+//                                 raw_device_mac_addr[3], raw_device_mac_addr[4], raw_device_mac_addr[5]);
                         device_mac_addr = string(mac_addr);
 
                         Logging::log(debug, string(current->name) + ": mac address: " + string(device_mac_addr));

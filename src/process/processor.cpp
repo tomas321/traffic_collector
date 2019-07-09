@@ -81,6 +81,12 @@ string Processor::jsonize_packet(const uint8_t *raw_packet, const uint32_t packe
             json.add<string>("direction", "tx");
         else if (string(MACAddress::to_string(dst_mac)) == string(MACAddress::to_string(handle_mac_addr)))
             json.add<string>("direction", "rx");
+        else {
+            Logging::log(warning, string(MACAddress::to_string(src_mac)) + "->" + string(MACAddress::to_string(dst_mac)));
+            Logging::log(warning, "handle's mac addr: " + string(MACAddress::to_string(handle_mac_addr)));
+        }
+    } else {
+        Logging::log(warning, "didnt attach direction field");
     }
     json.end_object();
 
