@@ -1,0 +1,25 @@
+File                        Description
+
+sensor/                     contains the C++ project structure
+  bin/                      all executable source files
+  lib/                      local library files (rapidjson)
+  include/                  all C++ header files
+  src/                      all C++ source files
+  resources/                configuration and data files
+    elk/                    kibana objects and index template
+    geoip/                  geolocation data
+    config_specs.yml        configuration specification file
+    traffcol.yml            main configuration file.
+  dependencies              list of sensor dependencies
+  CMakeLists.txt            cmake file
+  initialize_kibana.sh      kibana initialization script
+ansible/                    main ansible directory
+  ansible.cfg               ansible configuration file
+  ansible.log               predifined ansible log file
+  hosts                     list of ansible target hosts
+  playbooks/                all playbooks
+    rsyslog.yml             rsyslog deployment playbook
+    elk.yml                 ELK stack deployment playbook
+    traffcol.yml            traffcol dependecies playbook
+  roles/                    all ansible roles
+thesis.pdf                  thesis pdf version

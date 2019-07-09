@@ -1,0 +1,4 @@
+gcc
+cmake
+make
+gmake (instead of 'make' because geoip requires it)

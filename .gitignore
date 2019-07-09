@@ -1,3 +1,28 @@
+### LaTEX
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.out
+*.synctex.gz
+
 ### C++ template
 # Compiled Object files
 *.slo
@@ -58,6 +83,5 @@ fabric.properties
 # Ignore the build and lib dirs
 build
 lib/*
+!lib/rapidjson
 
-# Ignore any executables
-bin/*

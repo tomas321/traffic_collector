@@ -1,0 +1,19 @@
+PUT _template/new_template
+{
+  "index_patterns": ["my_index-*"]
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1
+  },
+  "mappings": { 
+    "_doc": {
+      "properties": {
+        "ip": {
+          "properties": {
+            "source": { "type": "ip" },
+            "ttl": { "type": "integer" }
+          }
+        },
+        "host": { "type": "keyword" }
+      }
+    }}}

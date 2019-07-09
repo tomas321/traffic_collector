@@ -1,0 +1,11 @@
+PREPARATIONS:
+  
+- create visualization working on expected index pattern (bp-*) and saved filters
+  - export all objects to a json file
+- reinstall kibana and send new data to new indices
+
+DEPLOY KIBANA UI
+- put ES index template
+- create indices based on inserted template (for kibana index patterns)
+  \-> this is most likely redundant, because api allows index pattern creation, despite missing indices. When indices are created the index pattern needs to be refreshed :)
+- import all objects (json file from export)

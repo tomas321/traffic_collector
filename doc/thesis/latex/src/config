@@ -1,0 +1,12 @@
+# capture interface and mode
+# default interface => not specified
+sensor:
+    interface: eth1
+    # one of [in, out, promisc] default direction => promisc
+    direction: promisc
+
+# Filebeat connection specification
+# default host => localhost:12000
+beats:
+    host: 192.148.56.4
+    port: 12000

@@ -1,0 +1,80 @@
+
+\thispagestyle{empty}
+
+\section*{Anotácia}
+
+
+\noindent
+Slovenská technická univerzita v Bratislave
+
+\noindent
+FAKULTA INFORMATIKY A INFORMAČNÝCH TECHNOLÓGIÍ
+
+\noindent
+Študijný program: Internetové Technológie\\
+
+\noindent
+Autor: \myName
+
+\noindent
+Bakalárska práca: Zber a analýza dát o sieťovej premávke
+
+\noindent
+Vedúci bakalárskej práce: \mySupervisor
+
+\noindent
+\myDate%
+
+\bigskip{}
+
+\noindent
+Cieľom práce je implementovať efektívny mechanizmus pre systém typu UNIX na zber a analýzu sieťovej prevádzky s vhodným databázovým systémom. Hlavnými vlastnosťami sú rýchly zber prevádzky, databázový systém a mechanizmus pre analýzu dát v reálnom čase. Zrýchlenie bežných zberacích mechanizmov vyžaduje zrušenie nadbytočných kópií samotných paketov počas spracovania, zrýchlenie manipuláciu s potrebnými štruktúrami alebo vyradenie sieťového zásobníka systému z procesu. Je potrebné vyvarovať sa potenciálnemu zahlceniu a zabezpečiť analýzu dát v reálnom čase. Návrh a samotné riešenie sa skladá zo zberaču paketov ako program v C++ vy\-u\-ží\-va\-jú\-ci libpcap knižnicu na základe \emph{netmap}u a NoSQL Elasticsearch databázu s Kibana komponentom pre zobraovanie dát. Libpcap na základe netmapu má výhodu kompatibility a rýchly zber paketov. Elasticsearch a Kibana poskytujú rýchle vyhľadávanie a zobrazovacie mechanizmy vhodné pre analýzu sieťovej prevádzky. Aj keď vklad do Elasticsearch databázy je pomalší a predsatvuje možnosť úzkeho hrdla, sú špičky v prevádzke zachytené knižnicov a prejavia sa oneskoreným zobrazením. Naimplementovaný systém sa zameriava na vhodné dáta z paketov pre detekciu sieťových abnormalít a možných sieťových útokov.
+
+\newpage{}\thispagestyle{empty}
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+
+\thispagestyle{empty}
+\section*{Annotation}
+
+\noindent
+Slovak University of Technology in Bratislava 
+
+\noindent
+FACULTY OF INFORMATICS AND INFORMATION TECHNOLOGIES
+
+\noindent
+Degree Course: \myStudyProgram\\
+
+\noindent
+Author: \myName
+
+\noindent
+Bachelor thesis: \myTitle
+
+\noindent
+Supervisor: \mySupervisor
+
+\noindent
+\myDate%
+
+\bigskip{}
+
+\noindent
+Goal of this thesis is to implement an efficient packet capture tool with storage and analysis of the received data for UNIX system. Key features are fast capture mechanism utilization, storage system and real-time network traffic analysis tool. Speeding up basic packet capture mechanisms requires bypassing redundant copies in packet processing, simplifying the used structures or bypassing the network stack. It is important to overcome factors like bottleneck in processing and fast database search when analyzing data in real-time. The solution consists of a C++ program for network traffic capture utilizing netmap-based libpcap library, NoSQL Elasticsearch database and its Kibana component for data visualization. Netmap-based libpcap provides compatibility and fast packet capture depending on the network adapter. Elasticsearch provides fast data search with preconfigured Kibana visualization tool fit for network traffic analysis. Even though the insertions to Elasticsearch is not in wire rate and could produce a bottleneck, the produced spikes in network flow are buffered by the libpcap library and visualized with small delay. The implemented system targets proper network data to detect network abnormalities and potential network attacks.
+
+\newpage{}\thispagestyle{empty}\medskip{}
+
+
+\newpage{}
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+
+
+

@@ -1,0 +1,14 @@
+pcap_t *handle;
+pcap_findalldevs((pcap_if_t **) alldevs, errbuf); //followed by retrieving the MAC and IP address
+pcap_set_snaplen(handle, 300);
+pcap_set_immediate_mode(handle, 1);
+pcap_set_buffer_size(handle, INT_MAX); //2GB
+pcap_set_tstamp_type(handle, PCAP_TSTAMP_ADAPTER);
+pcap_set_promisc(handle, 1); //in case of promiscuous mode
+pcap_activate(handle);
+
+// filter traffic if direction is one of ['in', 'out']
+pcap_compile(handle, (bpf_program *) prg, filter_str, 0, (bpf_u_int32) mask);
+pcap_setfilter(handle, (bpf_program *) prg);
+
+pcap_loop(handle, 0, (pcap_handler) fnc, (u_char *) user);

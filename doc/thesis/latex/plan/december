@@ -1,0 +1,76 @@
+===12.6.2018===
+- My supervisor and I decided on using python.
+- Look up a suitable library.
+- Think about zero-copy (minimum number of copies) mechanims.
+- Look up existing solutions.
+- Test scapy + Redis and scapy + Elasticsearch.
+
+
+===20.9.2018===
+- We discussed the structure of teh thesis.
+- Redis is not a good choice for its efficiency decrease at data increase.
+- Produce a prototype of scapy + Elasticseach + Kibana visualizations.
+
+
+===1.10.2018===
+- The prototype was a success and i can continue on developing Elasticsearch + Kibana.
+- We discussed the possible visualizations.
+  - I continued imporving the prototype towards that end.
+- Search for fast capture mechanisms.
+
+
+===8.10.2018===
+- Begin performance testing of various capture mechanisms with hping3 traffic generator tool
+  - tcpdump, netsniff-ng, pfring-tcpdump
+- Write thesis structure.
+
+
+===15.10.2018===
+- Add other mechanisms for performance testing.
+  - raw socket, libpcap
+- Both pfring-tcpdump and netsniff-ng have no drop rate oposing to tcpdump.
+- Proper performance testing with capturing elapsed time and capture statistics.
+- Create graphs representing mechnisms' performance.
+
+
+===22.10.2018===
+- Test pfring libpcap and standard libpcap libraries.
+- Read about netmap framework.
+- Scapy is not usable, since its performance it very poor.
+- Netsniff-ng is also not usable, since its only a capture utility with no API.
+- Raw socket is best so far (especially for low packet rate)
+
+
+===29.10.2018===
+- Work on ELK stack (the database interface) and its performance.
+- Implementa simple single libpcap program and compile it with all libpcap libraries.
+  - netmap-libpcap, pfring-libpcap, standard libpcap.
+- Python is no longer the target programming language => C/C++.
+
+
+===05.11.2018===
+- Linked multiple complied libpcap versions to a single libcpap program.
+- Their performance is mostly comparable, but netmap is by far the best.
+- We discussed the contents of multiple chapters of the thesis.
+- Started writing analysis.
+
+
+===12.11.2018===
+- Netmap provides a fast traffic generator (pkt-gen), but wasn't able to reach its full potential (9 Mpps).
+- ELK stack performance is very low, but Kibana is very suitable program for visualizations and Elasticsearch has fast search.
+- Possible theoretical improvemnet is to enlarge the Elasticseach cluster by several nodes.
+
+
+===22.11.2018===
+- Finished mechanism analysis.
+- Started with performance testing description.
+
+
+===29.11.2018===
+- Finished Analysis.
+- Started with solution design.
+
+
+===06.12.2018===
+- Finishing up with Design.
+- Started on implementation outline
